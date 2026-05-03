@@ -1,0 +1,151 @@
+{
+  "theme_and_archetype": {
+    "theme": "light",
+    "archetype": "Archetype 1 + 4 (Editorial/Risograph SaaS)",
+    "description": "A high-contrast, tactile editorial look breaking away from generic 'AI gradients'. It uses a warm background with vibrant, striking accents like Vermilion and Cobalt, feeling like a premium magazine mixed with a modern creator economy platform."
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Cabinet Grotesk, sans-serif",
+      "body": "Satoshi, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "hierarchy": {
+      "h1": "text-5xl sm:text-6xl+ tracking-tighter font-black",
+      "h2": "text-4xl sm:text-5xl tracking-tight font-bold",
+      "h3": "text-2xl sm:text-3xl tracking-tight font-semibold",
+      "h4": "text-xl font-medium",
+      "body": "text-base leading-relaxed",
+      "overline": "text-xs font-bold uppercase tracking-[0.2em]"
+    }
+  },
+  "colors": {
+    "background": "#F7F5F0",
+    "foreground": "#1A1A1A",
+    "primary": {
+      "DEFAULT": "#FF4F00",
+      "foreground": "#FFFFFF",
+      "hover": "#E64700"
+    },
+    "secondary": {
+      "DEFAULT": "#0047FF",
+      "foreground": "#FFFFFF",
+      "hover": "#003CE6"
+    },
+    "surface": {
+      "DEFAULT": "#EFEBE1",
+      "foreground": "#1A1A1A",
+      "border": "#D8D4C9"
+    },
+    "muted": {
+      "DEFAULT": "#E0DDD5",
+      "foreground": "#66635D"
+    },
+    "accent": {
+      "yellow": "#FFD600",
+      "pink": "#FF3399"
+    }
+  },
+  "layout_and_spacing": {
+    "spacing_scale": "p-4, p-6, p-8, p-12, p-16, p-24 (Generous padding)",
+    "container": "max-w-7xl mx-auto px-6",
+    "border_radius": "rounded-none (sharp, editorial) mixed with occasional rounded-full for buttons/pills",
+    "grids": "Bento Grid protocol: grid-cols-1 md:grid-cols-12 with varied spans (col-span-8, col-span-4) to create tension and asymmetry."
+  },
+  "components_strategy": {
+    "buttons": "Sharp corners, thick 2px borders, high contrast. On hover: solid fill to vibrant accent. Minimalist line icons.",
+    "cards": "Flat surfaces with 1px border (#D8D4C9). No soft drop shadows. Use hard offset shadows (4px 4px 0px #1A1A1A) for interactive elements.",
+    "inputs": "Shadcn components heavily customized: background #F7F5F0, border #D8D4C9, focus:border #FF4F00.",
+    "badges": "Pill-shaped, solid contrasting colors (Cobalt or Vermilion) for 'Premium', 'Restricted'."
+  },
+  "pages": [
+    {
+      "name": "Landing Page",
+      "sections": [
+        "Hero: Massive H1 'Earn Money Through Prompts'. Asymmetrical layout. Left side text, right side abstract 3D visual. Prominent CTA.",
+        "How It Works: Numbered cards (01, 02, 03) displaying steps for Creators vs Users. Bright colors, big numerals.",
+        "Featured Prompts: Bento grid of top-selling prompts with large image previews.",
+        "Testimonials Grid: Masonry/bento style reviews from creators.",
+        "FAQ: Minimalist accordion with sharp borders."
+      ]
+    },
+    {
+      "name": "Marketplace (Browse)",
+      "sections": [
+        "Filters Sidebar: Categories, price range, prompt type (Image, Text, Video, Code).",
+        "Grid: Responsive columns. Cards show preview image, title, author avatar, price/credits."
+      ]
+    },
+    {
+      "name": "Prompt Detail",
+      "sections": [
+        "Left: Large media showcase (Image/Video).",
+        "Right: Prompt metadata, credit requirement, dynamic localized pricing.",
+        "Sticky bottom bar (mobile) or right sidebar CTA (buy with credits or real money)."
+      ]
+    },
+    {
+      "name": "Business Dashboard",
+      "sections": [
+        "Overview Stats: Earnings, prompt views, conversion rate.",
+        "Credit Engine Widget: Real-time UI where creator types prompt and system auto-calculates credit cost.",
+        "Listings Table: Manage restricted (credits) vs public (direct buy) prompts."
+      ]
+    },
+    {
+      "name": "User Dashboard & Custom Work",
+      "sections": [
+        "Wallet: Current credit balance, quick-buy credit packs.",
+        "Purchase History: Vault of bought prompts.",
+        "Custom Request Board: Post a task (e.g. 'Build full stack website'), receive applications from Prompt Engineers."
+      ]
+    },
+    {
+      "name": "Pricing & Subscriptions",
+      "sections": [
+        "Toggle: Business Plans vs User Credit Packs.",
+        "Business Tiers: 199 INR (Basic), 499 INR (Pro), 899 INR (Elite). Dynamic display based on country.",
+        "Cards feature striking Cobalt/Vermilion accents and hard shadows."
+      ]
+    }
+  ],
+  "media_assets": {
+    "hero_visuals": [
+      {
+        "url": "https://images.unsplash.com/photo-1776981986367-09705e5c6872?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMDNkJTIwdmlicmFudHxlbnwwfHx8fDE3Nzc4MjIzMzJ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract orange organic shape on black background (Use as intense accent graphic)",
+        "category": "hero_graphic"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1693487048787-a19cc08ded79?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMDNkJTIwdmlicmFudHxlbnwwfHx8fDE3Nzc4MjIzMzJ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Computer generated image of a flower on a purple background (Use in prompt marketplace cards)",
+        "category": "prompt_preview"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1605106702842-01a887a31122?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwyfHxnZW9tZXRyaWMlMjBzaGFwZXxlbnwwfHx8fDE3Nzc4MjIzMzJ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Blue geometric pattern for UI accents",
+        "category": "texture"
+      }
+    ],
+    "portraits": [
+      {
+        "url": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwwfHx8fDE3Nzc4MjIzMzJ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Professional portrait 1 (User / Testimonial)",
+        "category": "avatar"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1560250097-0b93528c311a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwwfHx8fDE3Nzc4MjIzMzJ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Professional portrait 2 (Creator Profile)",
+        "category": "avatar"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Strictly adhere to the typography: Cabinet Grotesk for headings, Satoshi for body. NO Inter or Roboto.",
+    "Implement the Credit Engine in the Business Dashboard as a dynamic UI element that updates cost as the user types.",
+    "For the Custom Work Board, ensure clear separation between 'Requesting' side and 'Applying' side.",
+    "Use hard, sharp shadows on interactive cards and buttons for the editorial feel. Avoid soft blurred dropshadows.",
+    "Ensure the hero section highlights 'Earn Money Through Prompts' using a massive typography layout.",
+    "All interactive elements MUST have data-testid attributes (e.g., data-testid='cta-hero-monetize')."
+  ]
+}
