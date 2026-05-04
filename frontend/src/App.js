@@ -18,6 +18,7 @@ import CustomWorks from "./pages/CustomWorks";
 import Login from "./pages/Login";
 import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 function Layout({ children }) {
     return (
@@ -44,6 +45,7 @@ function App() {
                     <Route path="/login" element={<Layout><Login /></Layout>} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/onboarding" element={<Layout><Onboarding /></Layout>} />
+                    <Route path="/payments/success" element={<Layout><PaymentSuccess /></Layout>} />
                     <Route
                         path="/creator"
                         element={<ProtectedRoute role="business"><Layout><CreatorDashboard /></Layout></ProtectedRoute>}

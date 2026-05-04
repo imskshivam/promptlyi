@@ -18,17 +18,19 @@ export default function Pricing() {
     const subscribe = async (id) => {
         if (!user) { login(); return; }
         try {
-            await http.post("/subscriptions/subscribe", { plan_id: id });
-            toast.success("Subscribed! (MOCKED)"); refresh();
-        } catch { toast.error("Failed"); }
+            const r = await http.post("/subscriptions/subscribe", { plan_id: id });
+            if (r.data.checkout_url) { window.location.href = r.data.checkout_url; return; }
+            toast.success("Subscribed!"); refresh();
+        } catch (e) { toast.error(e.response?.data?.detail || "Subscription failed"); }
     };
 
     const buyPack = async (id) => {
         if (!user) { login(); return; }
         try {
-            await http.post("/credits/buy", { pack_id: id });
-            toast.success("Credits added! (MOCKED)"); refresh();
-        } catch { toast.error("Failed"); }
+            const r = await http.post("/credits/buy", { pack_id: id });
+            if (r.data.checkout_url) { window.location.href = r.data.checkout_url; return; }
+            toast.success("Credits added!"); refresh();
+        } catch (e) { toast.error(e.response?.data?.detail || "Failed"); }
     };
 
     return (

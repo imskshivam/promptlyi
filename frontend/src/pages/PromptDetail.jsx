@@ -26,6 +26,7 @@ export default function PromptDetail() {
         setPurchasing(true);
         try {
             const r = await http.post("/prompts/purchase", { prompt_id: id, method });
+            if (r.data.checkout_url) { window.location.href = r.data.checkout_url; return; }
             toast.success("Purchase successful!");
             if (r.data.content) setP({ ...p, content: r.data.content });
             else fetch();

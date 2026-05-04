@@ -1,7 +1,6 @@
 """
-PromptBazaar backend — FastAPI + MongoDB (Motor).
-Features: Emergent Google Auth, Prompt CRUD, Credits, Subscriptions, Custom Works.
-NOTE: Payment flows (Dodo Payments) are currently MOCKED pending API credentials.
+Promptly backend — FastAPI + MongoDB (Motor).
+Features: Emergent Google Auth, Prompt CRUD, Credits, Subscriptions, Custom Works, Dodo Payments.
 """
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response, status
 from fastapi.security import HTTPBearer
@@ -18,6 +17,12 @@ import logging
 import re
 import httpx
 
+try:
+    from dodopayments import AsyncDodoPayments
+    HAS_DODO_SDK = True
+except ImportError:
+    HAS_DODO_SDK = False
+
 # ---------- setup ----------
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -31,6 +36,29 @@ api = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# ---------- Dodo Payments client ----------
+DODO_API_KEY = os.environ.get("DODO_PAYMENTS_API_KEY", "").strip()
+DODO_ENV = os.environ.get("DODO_ENVIRONMENT", "test_mode").strip()
+FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "").strip()
+
+DODO_PRODUCTS = {
+    "sub_basic": os.environ.get("DODO_PROD_SUB_BASIC", "").strip(),
+    "sub_pro": os.environ.get("DODO_PROD_SUB_PRO", "").strip(),
+    "sub_elite": os.environ.get("DODO_PROD_SUB_ELITE", "").strip(),
+    "pack_starter": os.environ.get("DODO_PROD_PACK_STARTER", "").strip(),
+    "pack_pro": os.environ.get("DODO_PROD_PACK_PRO", "").strip(),
+    "pack_max": os.environ.get("DODO_PROD_PACK_MAX", "").strip(),
+    "prompt": os.environ.get("DODO_PROD_PROMPT", "").strip(),
+}
+
+dodo_client: Optional["AsyncDodoPayments"] = None
+if HAS_DODO_SDK and DODO_API_KEY:
+    try:
+        dodo_client = AsyncDodoPayments(bearer_token=DODO_API_KEY, environment=DODO_ENV)
+        logger.info(f"Dodo Payments client initialised (env={DODO_ENV})")
+    except Exception as e:
+        logger.exception(f"Failed to init Dodo client: {e}")
 
 
 def utc_now():
@@ -119,6 +147,58 @@ class CustomWorkCreate(BaseModel):
 class CustomWorkApply(BaseModel):
     message: str
     quoted_price_inr: int
+
+
+# ---------- Dodo Payments helpers ----------
+async def create_dodo_checkout(
+    *,
+    product_id: str,
+    customer: dict,
+    return_path: str,
+    metadata: dict,
+    quantity: int = 1,
+) -> dict:
+    """Create a Dodo Payments checkout session and return the redirect URL."""
+    if not dodo_client:
+        raise HTTPException(503, "Dodo Payments is not configured. Set DODO_PAYMENTS_API_KEY.")
+    if not product_id:
+        raise HTTPException(503, "Product ID not configured. Please add the matching DODO_PROD_* env var.")
+
+    return_url = f"{FRONTEND_ORIGIN}{return_path}"
+    try:
+        session = await dodo_client.checkout_sessions.create(
+            product_cart=[{"product_id": product_id, "quantity": quantity}],
+            customer={"email": customer["email"], "name": customer.get("name") or customer["email"]},
+            billing_address={"country": "IN", "city": "NA", "state": "NA", "street": "NA", "zipcode": "000000"},
+            return_url=return_url,
+            metadata=metadata,
+        )
+        # SDK returns object with attributes; convert to dict
+        return {
+            "session_id": getattr(session, "session_id", None) or getattr(session, "id", None),
+            "checkout_url": getattr(session, "checkout_url", None) or getattr(session, "url", None),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Dodo checkout creation failed")
+        raise HTTPException(502, f"Dodo Payments error: {str(e)}")
+
+
+async def dodo_payment_succeeded(payment_id: str) -> Optional[dict]:
+    """Retrieve a Dodo payment and return its metadata if status == succeeded. None otherwise."""
+    if not dodo_client or not payment_id:
+        return None
+    try:
+        p = await dodo_client.payments.retrieve(payment_id)
+    except Exception as e:
+        logger.warning(f"Dodo retrieve failed for {payment_id}: {e}")
+        return None
+    status_val = getattr(p, "status", None) or (p.get("status") if isinstance(p, dict) else None)
+    if str(status_val).lower() != "succeeded":
+        return None
+    metadata = getattr(p, "metadata", None) or (p.get("metadata") if isinstance(p, dict) else {}) or {}
+    return {"status": status_val, "metadata": metadata, "payment_id": payment_id}
 
 
 # ---------- Auth helpers ----------
@@ -365,7 +445,7 @@ async def delete_prompt(prompt_id: str, user: dict = Depends(require_business)):
     return {"ok": True}
 
 
-# ---------- Purchases (MOCKED payments) ----------
+# ---------- Purchases (Dodo Payments for money, internal for credits) ----------
 @api.post("/prompts/purchase")
 async def purchase_prompt(body: PurchaseRequest, user: dict = Depends(get_current_user)):
     p = await db.prompts.find_one({"id": body.prompt_id}, {"_id": 0})
@@ -376,8 +456,9 @@ async def purchase_prompt(body: PurchaseRequest, user: dict = Depends(get_curren
 
     existing = await db.purchases.find_one({"user_id": user["id"], "prompt_id": body.prompt_id})
     if existing:
-        return {"ok": True, "already_owned": True}
+        return {"ok": True, "already_owned": True, "content": p["content"]}
 
+    # ---- Credits flow (instant, no gateway) ----
     if body.method == "credits":
         if not p["is_restricted"]:
             raise HTTPException(400, "This prompt is not restricted; use 'money' to buy.")
@@ -389,27 +470,42 @@ async def purchase_prompt(body: PurchaseRequest, user: dict = Depends(get_curren
             "id": str(uuid.uuid4()), "user_id": user["id"], "amount": -cost,
             "type": "spend", "ref": p["id"], "created_at": iso(utc_now()),
         })
-        amount_paid = 0
-    else:
-        if p["is_restricted"]:
-            raise HTTPException(400, "This prompt is restricted; credits required.")
-        amount_paid = p["price_inr"]
-        # MOCKED: assume payment succeeds
+        purchase = {
+            "id": str(uuid.uuid4()), "user_id": user["id"], "prompt_id": body.prompt_id,
+            "creator_id": p["creator_id"], "method": "credits", "amount_inr": 0,
+            "credits_used": cost, "created_at": iso(utc_now()),
+        }
+        await db.purchases.insert_one(purchase.copy())
+        await db.prompts.update_one({"id": body.prompt_id}, {"$inc": {"downloads": 1}})
+        purchase.pop("_id", None)
+        return {"ok": True, "purchase": purchase, "content": p["content"]}
 
-    purchase = {
-        "id": str(uuid.uuid4()),
-        "user_id": user["id"],
-        "prompt_id": body.prompt_id,
-        "creator_id": p["creator_id"],
-        "method": body.method,
-        "amount_inr": amount_paid,
-        "credits_used": p["credits_required"] if body.method == "credits" else 0,
-        "created_at": iso(utc_now()),
+    # ---- Money flow (Dodo checkout) ----
+    if p["is_restricted"]:
+        raise HTTPException(400, "This prompt is restricted; credits required.")
+    if p["price_inr"] <= 0:
+        # free prompt — just record purchase
+        purchase = {
+            "id": str(uuid.uuid4()), "user_id": user["id"], "prompt_id": body.prompt_id,
+            "creator_id": p["creator_id"], "method": "money", "amount_inr": 0,
+            "credits_used": 0, "created_at": iso(utc_now()),
+        }
+        await db.purchases.insert_one(purchase.copy())
+        await db.prompts.update_one({"id": body.prompt_id}, {"$inc": {"downloads": 1}})
+        purchase.pop("_id", None)
+        return {"ok": True, "purchase": purchase, "content": p["content"]}
+
+    metadata = {
+        "kind": "prompt", "user_id": user["id"], "prompt_id": p["id"],
+        "creator_id": p["creator_id"], "amount_inr": str(p["price_inr"]),
     }
-    await db.purchases.insert_one(purchase.copy())
-    await db.prompts.update_one({"id": body.prompt_id}, {"$inc": {"downloads": 1}})
-    purchase.pop("_id", None)
-    return {"ok": True, "purchase": purchase, "content": p["content"]}
+    sess = await create_dodo_checkout(
+        product_id=DODO_PRODUCTS["prompt"],
+        customer={"email": user["email"], "name": user["name"]},
+        return_path="/payments/success",
+        metadata=metadata,
+    )
+    return {"ok": True, "redirect": True, "checkout_url": sess["checkout_url"], "session_id": sess["session_id"]}
 
 
 @api.get("/purchases")
@@ -423,17 +519,17 @@ async def my_purchases(user: dict = Depends(get_current_user)):
     return out
 
 
-# ---------- Credits (MOCKED) ----------
+# ---------- Credits ----------
 CREDIT_PACKS = {
-    "starter": {"id": "starter", "credits": 100, "price_inr": 199, "label": "Starter Pack"},
-    "pro":     {"id": "pro",     "credits": 500, "price_inr": 799, "label": "Pro Pack"},
-    "max":     {"id": "max",     "credits": 1500,"price_inr": 1999,"label": "Max Pack"},
+    "starter": {"id": "starter", "credits": 100, "price_inr": 199, "label": "Starter Pack", "product_key": "pack_starter"},
+    "pro":     {"id": "pro",     "credits": 500, "price_inr": 799, "label": "Pro Pack",     "product_key": "pack_pro"},
+    "max":     {"id": "max",     "credits": 1500,"price_inr": 1999,"label": "Max Pack",     "product_key": "pack_max"},
 }
 
 
 @api.get("/credits/packs")
 async def credit_packs():
-    return list(CREDIT_PACKS.values())
+    return [{k: v for k, v in p.items() if k != "product_key"} for p in CREDIT_PACKS.values()]
 
 
 @api.post("/credits/buy")
@@ -441,16 +537,17 @@ async def buy_credits(body: CreditPackRequest, user: dict = Depends(get_current_
     pack = CREDIT_PACKS.get(body.pack_id)
     if not pack:
         raise HTTPException(404, "Pack not found")
-    # MOCKED payment success
-    await db.users.update_one({"id": user["id"]}, {"$inc": {"credits": pack["credits"]}})
-    tx = {
-        "id": str(uuid.uuid4()), "user_id": user["id"], "amount": pack["credits"],
-        "type": "purchase", "pack_id": pack["id"], "price_inr": pack["price_inr"],
-        "created_at": iso(utc_now()),
+    metadata = {
+        "kind": "credit_pack", "user_id": user["id"], "pack_id": pack["id"],
+        "credits": str(pack["credits"]), "amount_inr": str(pack["price_inr"]),
     }
-    await db.credit_transactions.insert_one(tx.copy())
-    tx.pop("_id", None)
-    return {"ok": True, "pack": pack, "tx": tx, "MOCKED": True}
+    sess = await create_dodo_checkout(
+        product_id=DODO_PRODUCTS[pack["product_key"]],
+        customer={"email": user["email"], "name": user["name"]},
+        return_path="/payments/success",
+        metadata=metadata,
+    )
+    return {"ok": True, "redirect": True, "checkout_url": sess["checkout_url"], "session_id": sess["session_id"]}
 
 
 @api.get("/credits/history")
@@ -459,17 +556,17 @@ async def credit_history(user: dict = Depends(get_current_user)):
     return [d async for d in cursor]
 
 
-# ---------- Subscriptions (MOCKED) ----------
+# ---------- Subscriptions ----------
 PLANS = {
-    "basic": {"id": "basic", "name": "Creator Basic", "price_inr": 199, "features": ["List up to 10 prompts", "Basic analytics", "Standard payouts"]},
-    "pro":   {"id": "pro",   "name": "Creator Pro",   "price_inr": 499, "features": ["Unlimited prompts", "Restricted prompts (credits)", "Advanced analytics", "Priority support"]},
-    "elite": {"id": "elite", "name": "Creator Elite", "price_inr": 899, "features": ["Everything in Pro", "Featured on homepage", "Custom storefront", "API access", "1:1 onboarding"]},
+    "basic": {"id": "basic", "name": "Creator Basic", "price_inr": 199, "features": ["List up to 10 prompts", "Basic analytics", "Standard payouts"], "product_key": "sub_basic"},
+    "pro":   {"id": "pro",   "name": "Creator Pro",   "price_inr": 499, "features": ["Unlimited prompts", "Restricted prompts (credits)", "Advanced analytics", "Priority support"], "product_key": "sub_pro"},
+    "elite": {"id": "elite", "name": "Creator Elite", "price_inr": 899, "features": ["Everything in Pro", "Featured on homepage", "Custom storefront", "API access", "1:1 onboarding"], "product_key": "sub_elite"},
 }
 
 
 @api.get("/subscriptions/plans")
 async def subscription_plans():
-    return list(PLANS.values())
+    return [{k: v for k, v in p.items() if k != "product_key"} for p in PLANS.values()]
 
 
 @api.post("/subscriptions/subscribe")
@@ -477,23 +574,110 @@ async def subscribe(body: SubscribeRequest, user: dict = Depends(get_current_use
     plan = PLANS.get(body.plan_id)
     if not plan:
         raise HTTPException(404, "Plan not found")
-    # MOCKED payment
-    expires_at = utc_now() + timedelta(days=30)
-    await db.users.update_one({"id": user["id"]}, {"$set": {"subscription_plan": plan["id"], "subscription_expires_at": iso(expires_at)}})
-    sub = {
-        "id": str(uuid.uuid4()), "user_id": user["id"], "plan_id": plan["id"],
-        "status": "active", "starts_at": iso(utc_now()), "expires_at": iso(expires_at),
-        "price_inr": plan["price_inr"],
+    metadata = {
+        "kind": "subscription", "user_id": user["id"], "plan_id": plan["id"],
+        "amount_inr": str(plan["price_inr"]),
     }
-    await db.subscriptions.insert_one(sub.copy())
-    sub.pop("_id", None)
-    return {"ok": True, "subscription": sub, "MOCKED": True}
+    sess = await create_dodo_checkout(
+        product_id=DODO_PRODUCTS[plan["product_key"]],
+        customer={"email": user["email"], "name": user["name"]},
+        return_path="/payments/success",
+        metadata=metadata,
+    )
+    return {"ok": True, "redirect": True, "checkout_url": sess["checkout_url"], "session_id": sess["session_id"]}
 
 
 @api.get("/subscriptions/mine")
 async def my_subscription(user: dict = Depends(get_current_user)):
     sub = await db.subscriptions.find_one({"user_id": user["id"], "status": "active"}, {"_id": 0}, sort=[("starts_at", -1)])
     return sub or {}
+
+
+# ---------- Payment confirmation (Dodo redirect) ----------
+class PaymentConfirmBody(BaseModel):
+    payment_id: Optional[str] = None
+    subscription_id: Optional[str] = None
+
+
+@api.post("/payments/confirm")
+async def confirm_payment(body: PaymentConfirmBody, user: dict = Depends(get_current_user)):
+    """Verify a Dodo payment after redirect and grant access. Idempotent."""
+    pid = body.payment_id or body.subscription_id
+    if not pid:
+        raise HTTPException(400, "payment_id or subscription_id required")
+
+    # idempotency: if we've already processed this id, return previous result
+    existing = await db.dodo_processed.find_one({"payment_id": pid}, {"_id": 0})
+    if existing:
+        return {"ok": True, "already_processed": True, "kind": existing.get("kind")}
+
+    info = await dodo_payment_succeeded(pid)
+    if not info:
+        # try as subscription
+        if dodo_client and body.subscription_id:
+            try:
+                s = await dodo_client.subscriptions.retrieve(body.subscription_id)
+                status_val = getattr(s, "status", None) or (s.get("status") if isinstance(s, dict) else None)
+                if str(status_val).lower() in {"active", "succeeded"}:
+                    metadata = getattr(s, "metadata", None) or (s.get("metadata") if isinstance(s, dict) else {}) or {}
+                    info = {"status": status_val, "metadata": metadata, "payment_id": body.subscription_id}
+            except Exception as e:
+                logger.warning(f"Subscription retrieve failed: {e}")
+        if not info:
+            raise HTTPException(402, "Payment not confirmed")
+
+    md = info["metadata"] or {}
+    if md.get("user_id") and md.get("user_id") != user["id"]:
+        raise HTTPException(403, "Payment belongs to another user")
+
+    kind = md.get("kind")
+    result = {"kind": kind}
+
+    if kind == "credit_pack":
+        pack_id = md.get("pack_id")
+        pack = CREDIT_PACKS.get(pack_id)
+        if pack:
+            await db.users.update_one({"id": user["id"]}, {"$inc": {"credits": pack["credits"]}})
+            await db.credit_transactions.insert_one({
+                "id": str(uuid.uuid4()), "user_id": user["id"], "amount": pack["credits"],
+                "type": "purchase", "pack_id": pack_id, "price_inr": pack["price_inr"],
+                "payment_id": pid, "created_at": iso(utc_now()),
+            })
+            result["credits_added"] = pack["credits"]
+
+    elif kind == "subscription":
+        plan_id = md.get("plan_id")
+        plan = PLANS.get(plan_id)
+        if plan:
+            expires_at = utc_now() + timedelta(days=30)
+            await db.users.update_one({"id": user["id"]}, {"$set": {"subscription_plan": plan_id, "subscription_expires_at": iso(expires_at)}})
+            await db.subscriptions.insert_one({
+                "id": str(uuid.uuid4()), "user_id": user["id"], "plan_id": plan_id,
+                "status": "active", "starts_at": iso(utc_now()), "expires_at": iso(expires_at),
+                "price_inr": plan["price_inr"], "payment_id": pid,
+            })
+            result["plan_id"] = plan_id
+
+    elif kind == "prompt":
+        prompt_id = md.get("prompt_id")
+        prm = await db.prompts.find_one({"id": prompt_id}, {"_id": 0})
+        if prm:
+            already = await db.purchases.find_one({"user_id": user["id"], "prompt_id": prompt_id})
+            if not already:
+                await db.purchases.insert_one({
+                    "id": str(uuid.uuid4()), "user_id": user["id"], "prompt_id": prompt_id,
+                    "creator_id": prm["creator_id"], "method": "money", "amount_inr": prm["price_inr"],
+                    "credits_used": 0, "payment_id": pid, "created_at": iso(utc_now()),
+                })
+                await db.prompts.update_one({"id": prompt_id}, {"$inc": {"downloads": 1}})
+            result["prompt_id"] = prompt_id
+            result["content"] = prm["content"]
+
+    await db.dodo_processed.insert_one({
+        "payment_id": pid, "user_id": user["id"], "kind": kind,
+        "metadata": md, "created_at": iso(utc_now()),
+    })
+    return {"ok": True, **result}
 
 
 # ---------- Trending creators (must be defined BEFORE /creators/{creator_id}) ----------

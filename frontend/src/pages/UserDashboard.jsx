@@ -21,10 +21,11 @@ export default function UserDashboard() {
 
     const buyPack = async (id) => {
         try {
-            await http.post("/credits/buy", { pack_id: id });
-            toast.success("Credits added! (MOCKED payment)");
+            const r = await http.post("/credits/buy", { pack_id: id });
+            if (r.data.checkout_url) { window.location.href = r.data.checkout_url; return; }
+            toast.success("Credits added!");
             refresh();
-        } catch (e) { toast.error("Failed"); }
+        } catch (e) { toast.error(e.response?.data?.detail || "Failed"); }
     };
 
     const postWork = async (e) => {
