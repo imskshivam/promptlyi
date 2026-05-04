@@ -722,20 +722,33 @@ async def creator_stats(user: dict = Depends(require_business)):
     total_downloads = 0
     async for p in db.prompts.find({"creator_id": user["id"]}, {"downloads": 1, "_id": 0}):
         total_downloads += p.get("downloads", 0)
-    earnings_cursor = db.purchases.find({"creator_id": user["id"]}, {"_id": 0, "amount_inr": 1})
+    earnings_cursor = db.purchases.find({"creator_id": user["id"]}, {"_id": 0, "amount_inr": 1, "created_at": 1})
     earnings = 0
+    earnings_this_month = 0
+    month_start = utc_now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     async for p in earnings_cursor:
-        earnings += p.get("amount_inr", 0)
-    # available balance = lifetime earnings - already paid out
+        amt = p.get("amount_inr", 0)
+        earnings += amt
+        try:
+            ts = datetime.fromisoformat(p["created_at"])
+            if ts >= month_start:
+                earnings_this_month += amt
+        except Exception:
+            pass
     paid_out = 0
     async for po in db.payouts.find({"user_id": user["id"], "status": {"$in": ["pending", "processed"]}}, {"_id": 0, "amount_inr": 1}):
         paid_out += po.get("amount_inr", 0)
+    available = max(0, earnings - paid_out)
     return {
         "prompts_count": prompts_count,
         "total_downloads": total_downloads,
         "earnings_inr": earnings,
+        "earnings_this_month_inr": earnings_this_month,
         "paid_out_inr": paid_out,
-        "available_balance_inr": max(0, earnings - paid_out),
+        "available_balance_inr": available,
+        "min_payout_inr": MIN_PAYOUT_INR,
+        "payout_eligible": available >= MIN_PAYOUT_INR,
+        "payout_progress_pct": min(100, round(available * 100 / MIN_PAYOUT_INR)) if MIN_PAYOUT_INR else 100,
         "subscription_plan": user.get("subscription_plan"),
     }
 
@@ -793,12 +806,20 @@ async def creator_sales(user: dict = Depends(require_business)):
 
 # ---------- Payouts (5% commission) ----------
 COMMISSION_RATE = 0.05
+MIN_PAYOUT_INR = 8500  # ~ $100
+
+
+@api.get("/payouts/config")
+async def payout_config():
+    return {"min_payout_inr": MIN_PAYOUT_INR, "commission_rate": COMMISSION_RATE}
 
 
 @api.post("/payouts/request")
 async def request_payout(body: PayoutRequest, user: dict = Depends(require_business)):
     if body.amount_inr <= 0:
         raise HTTPException(400, "Amount must be positive")
+    if body.amount_inr < MIN_PAYOUT_INR:
+        raise HTTPException(400, f"Minimum payout is ₹{MIN_PAYOUT_INR:,} (~$100). Earn more to cash out.")
     # compute available balance
     earnings = 0
     async for p in db.purchases.find({"creator_id": user["id"]}, {"_id": 0, "amount_inr": 1}):

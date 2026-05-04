@@ -110,7 +110,7 @@ export default function CreatorDashboard() {
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
                 <StatCard label="Prompts live" value={stats.prompts_count || 0} icon={Package} bg="bg-white" />
-                <StatCard label="Downloads" value={stats.total_downloads || 0} icon={TrendingUp} bg="bg-[#FFD600]" />
+                <StatCard label="Earnings this month" value={`₹${stats.earnings_this_month_inr || 0}`} icon={TrendingUp} bg="bg-[#FFD600]" />
                 <StatCard label="Total earnings" value={`₹${stats.earnings_inr || 0}`} icon={IndianRupee} bg="bg-[#0047FF] text-white" />
                 <StatCard label="Available" value={`₹${stats.available_balance_inr || 0}`} icon={Wallet} bg="bg-white" />
                 <StatCard label="Plan" value={stats.subscription_plan || "FREE"} icon={Sparkles} bg="bg-[#FF4F00] text-white" />
@@ -118,6 +118,7 @@ export default function CreatorDashboard() {
 
             <div className="flex gap-1 mb-6 border-b-2 border-[#1A1A1A] flex-wrap">
                 {[
+                    ["overview", "Overview"],
                     ["create", "Create Prompt"],
                     ["my-prompts", "My Prompts"],
                     ["revenue", "Revenue"],
@@ -129,6 +130,99 @@ export default function CreatorDashboard() {
                         data-testid={`tab-${t}`}>{lbl}</button>
                 ))}
             </div>
+
+            {/* ============ OVERVIEW ============ */}
+            {tab === "overview" && (
+                <div className="grid md:grid-cols-12 gap-6">
+                    {/* Listed prompts panel */}
+                    <div className="md:col-span-7 bg-white border-2 border-[#1A1A1A] hard-shadow p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-heading text-2xl font-black flex items-center gap-2"><Package className="w-5 h-5" /> Your Listed Prompts</h3>
+                            <button onClick={() => setTab("create")} className="btn-vermilion !py-1.5 !px-3 text-xs" data-testid="overview-create-btn">+ New</button>
+                        </div>
+                        {prompts.length === 0 ? (
+                            <div className="text-center py-10 text-[#66635D]">
+                                <p className="mb-4">No prompts listed yet. Publish your first prompt to start earning.</p>
+                                <button onClick={() => setTab("create")} className="btn-ink">Create your first prompt →</button>
+                            </div>
+                        ) : (
+                            <div className="space-y-2 max-h-[480px] overflow-auto">
+                                {prompts.slice(0, 8).map((p) => (
+                                    <div key={p.id} className="flex items-center gap-3 p-3 border-2 border-[#1A1A1A] bg-[#F7F5F0]" data-testid={`overview-prompt-${p.id}`}>
+                                        <img src={p.preview_url || "https://images.unsplash.com/photo-1693487048787-a19cc08ded79?w=200"} className="w-12 h-12 object-cover border-2 border-[#1A1A1A]" alt="" />
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-heading font-bold text-sm truncate">{p.title}</div>
+                                            <div className="text-xs text-[#66635D] truncate">
+                                                {p.is_restricted ? `${p.credits_required} credits` : `₹${p.price_inr}`} · {p.downloads || 0} downloads
+                                            </div>
+                                        </div>
+                                        <span className="text-xs uppercase font-bold tracking-wider text-[#0047FF]">{p.category}</span>
+                                    </div>
+                                ))}
+                                {prompts.length > 8 && (
+                                    <button onClick={() => setTab("my-prompts")} className="w-full text-center py-2 text-xs uppercase font-bold tracking-wider text-[#FF4F00] hover:underline">
+                                        View all {prompts.length} prompts →
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Earnings + Payout summary */}
+                    <div className="md:col-span-5 space-y-4">
+                        <div className="bg-[#1A1A1A] text-[#F7F5F0] border-2 border-[#1A1A1A] hard-shadow-vermilion p-6">
+                            <div className="text-xs uppercase font-bold tracking-wider text-[#FFD600] mb-2">Earnings overview</div>
+                            <div className="space-y-3">
+                                <div>
+                                    <div className="text-xs text-white/60 uppercase tracking-wider">This month</div>
+                                    <div className="font-heading font-black text-4xl">₹{stats.earnings_this_month_inr || 0}</div>
+                                </div>
+                                <div className="border-t border-white/10 pt-3">
+                                    <div className="text-xs text-white/60 uppercase tracking-wider">Total earned</div>
+                                    <div className="font-heading font-black text-2xl">₹{stats.earnings_inr || 0}</div>
+                                </div>
+                                <div className="border-t border-white/10 pt-3 grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                        <div className="text-white/60 uppercase tracking-wider">Downloads</div>
+                                        <div className="font-bold text-base">{stats.total_downloads || 0}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-white/60 uppercase tracking-wider">Paid out</div>
+                                        <div className="font-bold text-base">₹{stats.paid_out_inr || 0}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white border-2 border-[#1A1A1A] hard-shadow p-6">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="text-xs uppercase font-bold tracking-wider text-[#FF4F00]">Payout progress</div>
+                                <Banknote className="w-5 h-5 text-[#FF4F00]" />
+                            </div>
+                            <div className="font-heading font-black text-3xl">₹{stats.available_balance_inr || 0}</div>
+                            <div className="text-xs text-[#66635D] mt-1">of ₹{stats.min_payout_inr || 8500} minimum (~$100)</div>
+                            <div className="mt-3 h-3 bg-[#EFEBE1] border-2 border-[#1A1A1A] overflow-hidden">
+                                <div className={`h-full ${stats.payout_eligible ? "bg-[#FFD600]" : "bg-[#FF4F00]"}`} style={{ width: `${stats.payout_progress_pct || 0}%` }} />
+                            </div>
+                            {stats.payout_eligible ? (
+                                <button onClick={() => setTab("payouts")} className="btn-vermilion w-full mt-4 hard-shadow" data-testid="overview-payout-btn">
+                                    Cash out now →
+                                </button>
+                            ) : (
+                                <div className="mt-3 text-xs text-[#66635D]">
+                                    Earn <span className="font-bold text-[#1A1A1A]">₹{Math.max(0, (stats.min_payout_inr || 8500) - (stats.available_balance_inr || 0))}</span> more to unlock payout. 5% commission applies on cashout.
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="bg-[#FFD600] border-2 border-[#1A1A1A] hard-shadow p-5 text-sm">
+                            <div className="font-heading font-black text-base mb-1">💡 Boost your earnings</div>
+                            <p className="text-[#1A1A1A]/80">List restricted (credits-only) prompts for premium IP. Use the Credit Engine to price fairly.</p>
+                            <button onClick={() => setTab("create")} className="mt-3 btn-ink !py-1.5 !px-3 text-xs" data-testid="overview-list-btn">Create restricted prompt →</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ============ CREATE ============ */}
             {tab === "create" && (
@@ -329,8 +423,17 @@ export default function CreatorDashboard() {
                 <div className="grid md:grid-cols-12 gap-6">
                     <div className="md:col-span-5 bg-white border-2 border-[#1A1A1A] hard-shadow p-6 space-y-3">
                         <div className="font-heading font-black text-2xl flex items-center gap-2"><Banknote className="w-5 h-5 text-[#FF4F00]" /> Request payout</div>
-                        <div className="text-sm text-[#66635D]">Available: <span className="font-bold text-[#1A1A1A]">₹{stats.available_balance_inr || 0}</span> · Commission: <span className="font-bold">5%</span></div>
-                        <input type="number" placeholder="Amount ₹" value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0]" data-testid="payout-amount" />
+                        <div className="text-sm text-[#66635D]">
+                            Available: <span className="font-bold text-[#1A1A1A]">₹{stats.available_balance_inr || 0}</span> ·
+                            Minimum: <span className="font-bold text-[#1A1A1A]">₹{stats.min_payout_inr || 8500}</span> ·
+                            Commission: <span className="font-bold">5%</span>
+                        </div>
+                        {!stats.payout_eligible && (
+                            <div className="bg-[#EFEBE1] border-2 border-[#1A1A1A] p-3 text-xs">
+                                Earn <span className="font-bold">₹{Math.max(0, (stats.min_payout_inr || 8500) - (stats.available_balance_inr || 0))}</span> more to unlock payout (~$100 minimum threshold).
+                            </div>
+                        )}
+                        <input type="number" placeholder={`Amount ₹ (min ${stats.min_payout_inr || 8500})`} value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} disabled={!stats.payout_eligible} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0] disabled:opacity-50" data-testid="payout-amount" />
                         {parseInt(payoutAmount) > 0 && (
                             <div className="bg-[#EFEBE1] border-2 border-[#1A1A1A] p-3 text-sm space-y-1 font-mono">
                                 <div className="flex justify-between"><span>Requested</span><span>₹{payoutAmount}</span></div>
@@ -338,7 +441,7 @@ export default function CreatorDashboard() {
                                 <div className="flex justify-between border-t border-[#1A1A1A] pt-1 mt-1 font-bold"><span>You receive</span><span>₹{(parseInt(payoutAmount) || 0) - commission}</span></div>
                             </div>
                         )}
-                        <button onClick={requestPayout} className="btn-vermilion w-full" data-testid="payout-submit">Request Payout</button>
+                        <button onClick={requestPayout} disabled={!stats.payout_eligible} className="btn-vermilion w-full disabled:opacity-50 disabled:cursor-not-allowed" data-testid="payout-submit">Request Payout</button>
                         <div className="text-xs text-[#66635D]">Payouts are processed within 3 business days. (MOCKED)</div>
                     </div>
                     <div className="md:col-span-7">
