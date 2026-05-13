@@ -20,9 +20,21 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => { refresh(); }, [refresh]);
 
+    // Navigate to login page — no external OAuth redirect
     const login = () => {
-        const redirectUrl = `${window.location.origin}/auth/callback`;
-        window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+        window.location.href = "/login";
+    };
+
+    const loginWithCredentials = async (email, password) => {
+        const r = await http.post("/auth/login", { email, password });
+        setUser(r.data.user);
+        return r.data.user;
+    };
+
+    const register = async (email, password, name) => {
+        const r = await http.post("/auth/register", { email, password, name });
+        setUser(r.data.user);
+        return r.data.user;
     };
 
     const logout = async () => {
@@ -38,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthCtx.Provider value={{ user, loading, login, logout, selectRole, refresh, setUser }}>
+        <AuthCtx.Provider value={{ user, loading, login, loginWithCredentials, register, logout, selectRole, refresh, setUser }}>
             {children}
         </AuthCtx.Provider>
     );

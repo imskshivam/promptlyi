@@ -1,13 +1,16 @@
 "use strict";
 
 module.exports = {
-    MONGO_URL: process.env.MONGO_URL,
-    DB_NAME: process.env.DB_NAME,
-    CORS_ORIGINS: (process.env.CORS_ORIGINS || "*").split(","),
+    MONGO_URL: process.env.MONGO_URL || "mongodb://127.0.0.1:27017",
+    DB_NAME: process.env.DB_NAME || "promptly",
+    CORS_ORIGINS: (process.env.CORS_ORIGINS || "http://localhost:3000").split(","),
+
+    JWT_SECRET: process.env.JWT_SECRET || "dev_secret_change_in_production",
 
     DODO_API_KEY: (process.env.DODO_PAYMENTS_API_KEY || "").trim(),
     DODO_ENVIRONMENT: (process.env.DODO_ENVIRONMENT || "test_mode").trim(),
-    FRONTEND_ORIGIN: (process.env.FRONTEND_ORIGIN || "").trim(),
+    DODO_WEBHOOK_SECRET: (process.env.DODO_WEBHOOK_SECRET || "").trim(),
+    FRONTEND_ORIGIN: (process.env.FRONTEND_ORIGIN || "http://localhost:3000").trim(),
 
     DODO_PRODUCTS: {
         sub_basic: (process.env.DODO_PROD_SUB_BASIC || "").trim(),
@@ -18,8 +21,6 @@ module.exports = {
         pack_max: (process.env.DODO_PROD_PACK_MAX || "").trim(),
         prompt: (process.env.DODO_PROD_PROMPT || "").trim(),
     },
-
-    EMERGENT_AUTH_URL: "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
 
     COMMISSION_RATE: 0.05,
     MIN_PAYOUT_INR: 8500, // ~ $100

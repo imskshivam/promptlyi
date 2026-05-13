@@ -1,14 +1,14 @@
 "use strict";
 const express = require("express");
 const { getDb } = require("../config/db");
-const { getCurrentUser, requireBusiness } = require("../middleware/auth");
+const { getCurrentUser, requirePromptUser } = require("../middleware/auth");
 const { asyncH } = require("../middleware/errorHandler");
 const { iso, utcNow, ymd, yearMonth, yearWeek } = require("../utils/time");
 const { MIN_PAYOUT_INR } = require("../config/env");
 
 const router = express.Router();
 
-router.get("/creator-stats", getCurrentUser, requireBusiness, asyncH(async (req, res) => {
+router.get("/creator-stats", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
     const userId = req.user.id;
     const promptsCount = await db.collection("prompts").countDocuments({ creator_id: userId });
@@ -43,7 +43,7 @@ router.get("/creator-stats", getCurrentUser, requireBusiness, asyncH(async (req,
     });
 }));
 
-router.get("/creator-revenue", getCurrentUser, requireBusiness, asyncH(async (req, res) => {
+router.get("/creator-revenue", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
     const interval = ["daily", "weekly", "monthly"].includes(req.query.interval) ? req.query.interval : "monthly";
     const now = utcNow();
@@ -87,7 +87,7 @@ router.get("/creator-revenue", getCurrentUser, requireBusiness, asyncH(async (re
     res.json({ interval, series: Object.values(series) });
 }));
 
-router.get("/creator-sales", getCurrentUser, requireBusiness, asyncH(async (req, res) => {
+router.get("/creator-sales", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
     const sales = await db.collection("purchases").find({ creator_id: req.user.id }, { projection: { _id: 0 } }).sort({ created_at: -1 }).limit(200).toArray();
     for (const s of sales) {

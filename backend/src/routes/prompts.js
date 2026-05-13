@@ -2,13 +2,17 @@
 const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 const { getDb } = require("../config/db");
-const { getCurrentUser, requireBusiness } = require("../middleware/auth");
+const { getCurrentUser, requirePromptUser } = require("../middleware/auth");
 const { asyncH, HttpError } = require("../middleware/errorHandler");
 const { iso, utcNow } = require("../utils/time");
-const { estimateCredits } = require("../services/creditEngine");
-const { createCheckout, DODO_PRODUCTS } = require("../services/dodoService");
 
 const router = express.Router();
+
+// Categories available for prompts
+const CATEGORIES = [
+    "image", "video", "code", "marketing", "design",
+    "writing", "business", "seo", "chatgpt", "midjourney", "3d", "music",
+];
 
 function publicView(prompt, hideContent = true) {
     const out = { ...prompt };
@@ -17,14 +21,23 @@ function publicView(prompt, hideContent = true) {
     return out;
 }
 
+// ─── Credit estimate (kept for reference, not used in pricing now) ────────────
 router.post("/credit-estimate", asyncH(async (req, res) => {
-    res.json(estimateCredits(req.body?.text || ""));
+    const text = req.body?.text || "";
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    const credits = Math.max(1, Math.round(words / 10));
+    res.json({ credits, words, tier: words > 200 ? "premium" : "basic", complexity: Math.min(10, Math.round(words / 50)) });
 }));
 
-// list
+// ─── Categories list ──────────────────────────────────────────────────────────
+router.get("/categories", asyncH(async (req, res) => {
+    res.json(CATEGORIES);
+}));
+
+// ─── List prompts ─────────────────────────────────────────────────────────────
 router.get("/prompts", asyncH(async (req, res) => {
     const db = getDb();
-    const { q, category, media_type, only_free, limit } = req.query;
+    const { q, category, limit } = req.query;
     const query = { published: true };
     if (q) {
         query.$or = [
@@ -33,9 +46,7 @@ router.get("/prompts", asyncH(async (req, res) => {
             { tags: { $in: [String(q).toLowerCase()] } },
         ];
     }
-    if (category) query.category = category;
-    if (media_type) query.media_type = media_type;
-    if (only_free === "true") query.price_inr = 0;
+    if (category && category !== "all") query.category = category;
 
     const lim = Math.min(parseInt(limit || "50", 10) || 50, 200);
     const rows = await db.collection("prompts").find(query, { projection: { _id: 0 } }).sort({ created_at: -1 }).limit(lim).toArray();
@@ -49,12 +60,14 @@ router.get("/prompts", asyncH(async (req, res) => {
     res.json(out);
 }));
 
-router.get("/prompts/mine", getCurrentUser, requireBusiness, asyncH(async (req, res) => {
+// ─── My prompts (prompt user only) ───────────────────────────────────────────
+router.get("/prompts/mine", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
     const rows = await db.collection("prompts").find({ creator_id: req.user.id }, { projection: { _id: 0 } }).sort({ created_at: -1 }).toArray();
     res.json(rows);
 }));
 
+// ─── Single prompt ────────────────────────────────────────────────────────────
 router.get("/prompts/:id", asyncH(async (req, res) => {
     const db = getDb();
     const p = await db.collection("prompts").findOne({ id: req.params.id }, { projection: { _id: 0 } });
@@ -65,38 +78,61 @@ router.get("/prompts/:id", asyncH(async (req, res) => {
     );
 
     let reveal = false;
-    const token = req.cookies?.session_token;
+    const cookieToken = req.cookies?.session_token;
+    const headerToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+    const token = cookieToken || headerToken;
     if (token) {
-        const sess = await db.collection("sessions").findOne({ session_token: token });
-        if (sess) {
-            if (sess.user_id === p.creator_id) reveal = true;
-            else {
-                const owned = await db.collection("purchases").findOne({ user_id: sess.user_id, prompt_id: p.id });
-                if (owned) reveal = true;
+        try {
+            const jwt = require("jsonwebtoken");
+            const { JWT_SECRET } = require("../config/env");
+            const payload = jwt.verify(token, JWT_SECRET);
+            const me = await db.collection("users").findOne({ id: payload.sub }, { projection: { _id: 0 } });
+            if (me) {
+                if (me.id === p.creator_id) reveal = true;
+                else {
+                    const owned = await db.collection("purchases").findOne({ user_id: me.id, prompt_id: p.id });
+                    if (owned) reveal = true;
+                }
             }
-        }
+        } catch {}
     }
     res.json(publicView(p, !reveal));
 }));
 
-router.post("/prompts", getCurrentUser, requireBusiness, asyncH(async (req, res) => {
+// ─── Create prompt (prompt user only) ────────────────────────────────────────
+router.post("/prompts", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
     const b = req.body || {};
-    if (!b.title || !b.description || !b.content || !b.category) throw new HttpError(400, "Missing required fields");
-    const est = estimateCredits(b.content);
+    if (!b.title || !b.description || !b.content || !b.category) throw new HttpError(400, "Missing required fields: title, description, content, category");
+    if (!CATEGORIES.includes(b.category)) throw new HttpError(400, `Invalid category. Valid: ${CATEGORIES.join(", ")}`);
+
+    const priceCredits = Math.max(0, parseInt(b.price_credits || 0, 10) || 0);
+
     const doc = {
         id: uuidv4(),
         creator_id: req.user.id,
         title: b.title,
         description: b.description,
         content: b.content,
+        // Preview media
         preview_url: b.preview_url || "",
         media_type: b.media_type === "video" ? "video" : "image",
+        // Example outputs (up to 5 image URLs + optional video)
+        example_images: Array.isArray(b.example_images)
+            ? b.example_images.slice(0, 5).filter(u => typeof u === "string" && u.trim())
+            : [],
+        example_video_url: b.example_video_url || "",
+        // Requirements / what user should provide
+        requirements: b.requirements || "",
+        // Taxonomy
         category: b.category,
         tags: (b.tags || []).map((t) => String(t).toLowerCase()),
-        price_inr: parseInt(b.price_inr || 0, 10) || 0,
-        credits_required: est.credits,
-        is_restricted: !!b.is_restricted,
+        // Pricing — credits only
+        price_credits: priceCredits,
+        // Legacy fields kept for backwards-compat
+        price_inr: 0,
+        is_restricted: priceCredits > 0,
+        credits_required: priceCredits,
         requires_user_media: ["none", "image", "video"].includes(b.requires_user_media) ? b.requires_user_media : "none",
         user_media_instructions: b.user_media_instructions || "",
         published: true,
@@ -109,21 +145,35 @@ router.post("/prompts", getCurrentUser, requireBusiness, asyncH(async (req, res)
     res.json(doc);
 }));
 
-router.put("/prompts/:id", getCurrentUser, requireBusiness, asyncH(async (req, res) => {
+// ─── Update prompt ────────────────────────────────────────────────────────────
+router.put("/prompts/:id", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
     const p = await db.collection("prompts").findOne({ id: req.params.id });
     if (!p) throw new HttpError(404, "Prompt not found");
     if (p.creator_id !== req.user.id) throw new HttpError(403, "Not your prompt");
-    const allowed = ["title", "description", "content", "preview_url", "media_type", "category", "tags", "price_inr", "is_restricted", "requires_user_media", "user_media_instructions"];
+
+    const allowed = [
+        "title", "description", "content", "preview_url", "media_type",
+        "example_images", "example_video_url", "requirements",
+        "category", "tags", "price_credits",
+        "requires_user_media", "user_media_instructions",
+    ];
     const update = {};
-    for (const k of allowed) if (req.body && req.body[k] !== undefined && req.body[k] !== null) update[k] = req.body[k];
-    if (update.content) update.credits_required = estimateCredits(update.content).credits;
+    for (const k of allowed) {
+        if (req.body && req.body[k] !== undefined && req.body[k] !== null) update[k] = req.body[k];
+    }
+    if (update.price_credits !== undefined) {
+        update.price_credits = Math.max(0, parseInt(update.price_credits, 10) || 0);
+        update.credits_required = update.price_credits;
+        update.is_restricted = update.price_credits > 0;
+    }
     if (Object.keys(update).length) await db.collection("prompts").updateOne({ id: req.params.id }, { $set: update });
     const updated = await db.collection("prompts").findOne({ id: req.params.id }, { projection: { _id: 0 } });
     res.json(updated);
 }));
 
-router.delete("/prompts/:id", getCurrentUser, requireBusiness, asyncH(async (req, res) => {
+// ─── Delete prompt ────────────────────────────────────────────────────────────
+router.delete("/prompts/:id", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
     const p = await db.collection("prompts").findOne({ id: req.params.id });
     if (!p || p.creator_id !== req.user.id) throw new HttpError(404, "Prompt not found");
@@ -131,67 +181,62 @@ router.delete("/prompts/:id", getCurrentUser, requireBusiness, asyncH(async (req
     res.json({ ok: true });
 }));
 
-// Purchase: credits flow internal, money flow → Dodo checkout redirect
+// ─── Purchase a prompt (credits only) ────────────────────────────────────────
 router.post("/prompts/purchase", getCurrentUser, asyncH(async (req, res) => {
     const db = getDb();
-    const { prompt_id, method } = req.body || {};
-    if (!prompt_id || !["credits", "money"].includes(method)) throw new HttpError(400, "Bad request");
+    const { prompt_id } = req.body || {};
+    if (!prompt_id) throw new HttpError(400, "prompt_id is required");
+
     const p = await db.collection("prompts").findOne({ id: prompt_id }, { projection: { _id: 0 } });
     if (!p) throw new HttpError(404, "Prompt not found");
     if (p.creator_id === req.user.id) throw new HttpError(400, "Cannot purchase your own prompt");
 
+    // Already owned?
     const owned = await db.collection("purchases").findOne({ user_id: req.user.id, prompt_id });
     if (owned) return res.json({ ok: true, already_owned: true, content: p.content });
 
-    if (method === "credits") {
-        if (!p.is_restricted) throw new HttpError(400, "This prompt is not restricted; use 'money' to buy.");
-        const cost = p.credits_required;
-        if ((req.user.credits || 0) < cost) throw new HttpError(402, "Insufficient credits");
-        await db.collection("users").updateOne({ id: req.user.id }, { $inc: { credits: -cost } });
-        await db.collection("credit_transactions").insertOne({
-            id: uuidv4(), user_id: req.user.id, amount: -cost,
-            type: "spend", ref: p.id, created_at: iso(utcNow()),
-        });
+    const cost = p.price_credits || 0;
+
+    // Free prompt
+    if (cost === 0) {
         const purchase = {
             id: uuidv4(), user_id: req.user.id, prompt_id, creator_id: p.creator_id,
-            method: "credits", amount_inr: 0, credits_used: cost, created_at: iso(utcNow()),
+            method: "free", amount_inr: 0, credits_used: 0, created_at: iso(utcNow()),
         };
         await db.collection("purchases").insertOne({ ...purchase });
         await db.collection("prompts").updateOne({ id: prompt_id }, { $inc: { downloads: 1 } });
         return res.json({ ok: true, purchase, content: p.content });
     }
 
-    // money flow
-    if (p.is_restricted) throw new HttpError(400, "This prompt is restricted; credits required.");
-    if ((p.price_inr || 0) <= 0) {
-        const purchase = {
-            id: uuidv4(), user_id: req.user.id, prompt_id, creator_id: p.creator_id,
-            method: "money", amount_inr: 0, credits_used: 0, created_at: iso(utcNow()),
-        };
-        await db.collection("purchases").insertOne({ ...purchase });
-        await db.collection("prompts").updateOne({ id: prompt_id }, { $inc: { downloads: 1 } });
-        return res.json({ ok: true, purchase, content: p.content });
+    // Credits purchase
+    const userCredits = req.user.credits || 0;
+    if (userCredits < cost) {
+        throw new HttpError(402, `Insufficient credits. You have ${userCredits}, need ${cost}.`);
     }
 
-    const sess = await createCheckout({
-        productId: DODO_PRODUCTS.prompt,
-        customer: { email: req.user.email, name: req.user.name },
-        returnPath: "/payments/success",
-        metadata: {
-            kind: "prompt", user_id: req.user.id, prompt_id: p.id,
-            creator_id: p.creator_id, amount_inr: String(p.price_inr),
-        },
+    await db.collection("users").updateOne({ id: req.user.id }, { $inc: { credits: -cost } });
+    await db.collection("credit_transactions").insertOne({
+        id: uuidv4(), user_id: req.user.id, amount: -cost,
+        type: "spend", ref: p.id, prompt_title: p.title, created_at: iso(utcNow()),
     });
-    res.json({ ok: true, redirect: true, checkout_url: sess.checkout_url, session_id: sess.session_id });
+    const purchase = {
+        id: uuidv4(), user_id: req.user.id, prompt_id, creator_id: p.creator_id,
+        method: "credits", amount_inr: 0, credits_used: cost, created_at: iso(utcNow()),
+    };
+    await db.collection("purchases").insertOne({ ...purchase });
+    await db.collection("prompts").updateOne({ id: prompt_id }, { $inc: { downloads: 1 } });
+
+    return res.json({ ok: true, purchase, content: p.content });
 }));
 
+// ─── Purchase history (client) ────────────────────────────────────────────────
 router.get("/purchases", getCurrentUser, asyncH(async (req, res) => {
     const db = getDb();
     const rows = await db.collection("purchases").find({ user_id: req.user.id }, { projection: { _id: 0 } }).sort({ created_at: -1 }).toArray();
     for (const r of rows) {
         r.prompt = await db.collection("prompts").findOne(
             { id: r.prompt_id },
-            { projection: { _id: 0, title: 1, preview_url: 1, category: 1, id: 1 } },
+            { projection: { _id: 0, title: 1, preview_url: 1, category: 1, id: 1, price_credits: 1 } },
         );
     }
     res.json(rows);

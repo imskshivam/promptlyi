@@ -1,16 +1,18 @@
 "use strict";
 const { MongoClient } = require("mongodb");
-const { MONGO_URL, DB_NAME } = require("./env");
 
 let client;
 let db;
 
 async function connectDb() {
     if (db) return db;
-    client = new MongoClient(MONGO_URL);
+    // Read MONGO_URL dynamically so server.js can update it before calling connectDb()
+    const mongoUrl = process.env.MONGO_URL || "mongodb://127.0.0.1:27017";
+    const dbName = process.env.DB_NAME || "promptly";
+    client = new MongoClient(mongoUrl);
     await client.connect();
-    db = client.db(DB_NAME);
-    console.log(`[promptly] connected to MongoDB (db=${DB_NAME})`);
+    db = client.db(dbName);
+    console.log(`[promptly] connected to MongoDB (db=${dbName})`);
     return db;
 }
 

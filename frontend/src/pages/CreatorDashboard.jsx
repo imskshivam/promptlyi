@@ -5,9 +5,12 @@ import { Coins, IndianRupee, TrendingUp, Package, Sparkles, Trash2, Lock, Unlock
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar } from "recharts";
 
+const CATEGORIES = ["image","video","code","marketing","design","writing","business","seo","chatgpt","midjourney","3d","music"];
+
 const EMPTY = {
     title: "", description: "", content: "", preview_url: "", media_type: "image",
-    category: "image", tags: "", price_inr: 0, is_restricted: false,
+    category: "image", tags: "", price_credits: 0,
+    example_images: "", example_video_url: "", requirements: "",
     requires_user_media: "none", user_media_instructions: "",
 };
 
@@ -71,10 +74,13 @@ export default function CreatorDashboard() {
             const payload = {
                 ...form,
                 tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
-                price_inr: parseInt(form.price_inr || 0),
+                price_credits: parseInt(form.price_credits || 0),
+                example_images: form.example_images
+                    ? form.example_images.split("\n").map(u => u.trim()).filter(Boolean)
+                    : [],
             };
             await http.post("/prompts", payload);
-            toast.success("Prompt listed! Users can preview and unlock.");
+            toast.success("Prompt listed! Clients can now find and unlock it.");
             setForm(EMPTY); fetchAll();
         } catch (e) { toast.error(e.response?.data?.detail || "Could not create"); }
         finally { setSubmitting(false); }
@@ -103,17 +109,16 @@ export default function CreatorDashboard() {
         <div className="max-w-7xl mx-auto px-6 py-10">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                 <div>
-                    <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF4F00] mb-2">Creator Dashboard</div>
+                    <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF4F00] mb-2">Prompt User Dashboard</div>
                     <h1 className="font-heading text-5xl md:text-6xl font-black tracking-tighter">Hi {user?.name?.split(" ")[0]}.</h1>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                 <StatCard label="Prompts live" value={stats.prompts_count || 0} icon={Package} bg="bg-white" />
-                <StatCard label="Earnings this month" value={`₹${stats.earnings_this_month_inr || 0}`} icon={TrendingUp} bg="bg-[#FFD600]" />
-                <StatCard label="Total earnings" value={`₹${stats.earnings_inr || 0}`} icon={IndianRupee} bg="bg-[#0047FF] text-white" />
-                <StatCard label="Available" value={`₹${stats.available_balance_inr || 0}`} icon={Wallet} bg="bg-white" />
-                <StatCard label="Plan" value={stats.subscription_plan || "FREE"} icon={Sparkles} bg="bg-[#FF4F00] text-white" />
+                <StatCard label="Sales this month" value={stats.earnings_this_month_inr || 0} icon={TrendingUp} bg="bg-[#FFD600]" />
+                <StatCard label="Total downloads" value={stats.total_downloads || 0} icon={IndianRupee} bg="bg-[#0047FF] text-white" />
+                <StatCard label="Available balance" value={`₹${stats.available_balance_inr || 0}`} icon={Wallet} bg="bg-white" />
             </div>
 
             <div className="flex gap-1 mb-6 border-b-2 border-[#1A1A1A] flex-wrap">
@@ -244,11 +249,7 @@ export default function CreatorDashboard() {
                             <div>
                                 <label className="block text-xs uppercase font-bold tracking-wider mb-1">Category</label>
                                 <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0]" data-testid="select-category">
-                                    <option value="image">Image</option>
-                                    <option value="code">Code</option>
-                                    <option value="marketing">Marketing</option>
-                                    <option value="design">Design</option>
-                                    <option value="video">Video</option>
+                                    {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>)}
                                 </select>
                             </div>
                             <div>
@@ -257,8 +258,20 @@ export default function CreatorDashboard() {
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs uppercase font-bold tracking-wider mb-1">Reference image / video URL (preview)</label>
+                            <label className="block text-xs uppercase font-bold tracking-wider mb-1">Preview Image URL</label>
                             <input value={form.preview_url} onChange={(e) => setForm({ ...form, preview_url: e.target.value })} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0]" placeholder="https://..." data-testid="input-preview" />
+                        </div>
+                        <div>
+                            <label className="block text-xs uppercase font-bold tracking-wider mb-1">Example Output Images (one URL per line, max 5)</label>
+                            <textarea value={form.example_images} onChange={(e) => setForm({ ...form, example_images: e.target.value })} rows={3} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0] text-sm" placeholder="https://example.com/img1.jpg&#10;https://example.com/img2.jpg" data-testid="input-example-images" />
+                        </div>
+                        <div>
+                            <label className="block text-xs uppercase font-bold tracking-wider mb-1">Example Video URL (optional)</label>
+                            <input value={form.example_video_url} onChange={(e) => setForm({ ...form, example_video_url: e.target.value })} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0]" placeholder="https://youtube.com/..." data-testid="input-example-video" />
+                        </div>
+                        <div>
+                            <label className="block text-xs uppercase font-bold tracking-wider mb-1">Requirements (what clients need to know/provide)</label>
+                            <textarea value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} rows={3} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0] text-sm" placeholder="e.g. Works best with GPT-4. Requires a product photo..." data-testid="input-requirements" />
                         </div>
 
                         {/* Requires user media */}
@@ -281,23 +294,18 @@ export default function CreatorDashboard() {
                                     data-testid="input-rum-instructions"
                                 />
                             )}
+                            <div>
+                            <label className="block text-xs uppercase font-bold tracking-wider mb-1 mt-4">Credit Price (0 = free)</label>
+                            <div className="flex items-center gap-3">
+                                <Coins className="w-5 h-5 text-[#FFD600]" />
+                                <input type="number" min="0" value={form.price_credits} onChange={(e) => setForm({ ...form, price_credits: e.target.value })} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0]" data-testid="input-price-credits" />
+                            </div>
+                            <div className="text-xs text-[#66635D] mt-1">
+                                <Lock className="w-3 h-3 inline mr-1" /> Set to 0 to make the prompt free. Clients spend credits to unlock.
+                            </div>
+                        </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <label className="inline-flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" checked={form.is_restricted} onChange={(e) => setForm({ ...form, is_restricted: e.target.checked })} data-testid="check-restricted" />
-                                <span className="text-sm font-bold">{form.is_restricted ? <><Lock className="w-3 h-3 inline" /> Credits only</> : <><Unlock className="w-3 h-3 inline" /> Direct buy (₹)</>}</span>
-                            </label>
-                            {!form.is_restricted && (
-                                <div className="flex-1">
-                                    <label className="block text-xs uppercase font-bold tracking-wider mb-1">Price ₹</label>
-                                    <input type="number" value={form.price_inr} onChange={(e) => setForm({ ...form, price_inr: e.target.value })} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0]" data-testid="input-price" />
-                                </div>
-                            )}
-                        </div>
-                        <div className="text-xs text-[#66635D]">
-                            <Lock className="w-3 h-3 inline mr-1" /> All prompts are preview-locked by default. Users see the preview & description but must buy / unlock to see the prompt content.
-                        </div>
                         <button type="submit" disabled={submitting} className="btn-vermilion w-full hard-shadow" data-testid="submit-prompt-btn">
                             {submitting ? "Publishing…" : "Publish Prompt"}
                         </button>

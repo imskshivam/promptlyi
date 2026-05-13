@@ -2,32 +2,62 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { http } from "../lib/api";
 import PromptCard from "../components/PromptCard";
-import { Search, SlidersHorizontal, TrendingUp, Crown, Download } from "lucide-react";
+import { Search, SlidersHorizontal, TrendingUp, Crown, Download, X } from "lucide-react";
 
-const CATS = ["all", "image", "code", "marketing", "design", "video"];
+const CATS = [
+    { id: "all",        label: "All",        emoji: "✨" },
+    { id: "image",      label: "Image",      emoji: "🖼️" },
+    { id: "video",      label: "Video",      emoji: "🎬" },
+    { id: "code",       label: "Code",       emoji: "💻" },
+    { id: "marketing",  label: "Marketing",  emoji: "📣" },
+    { id: "design",     label: "Design",     emoji: "🎨" },
+    { id: "writing",    label: "Writing",    emoji: "✍️" },
+    { id: "business",   label: "Business",   emoji: "💼" },
+    { id: "seo",        label: "SEO",        emoji: "🔍" },
+    { id: "chatgpt",    label: "ChatGPT",    emoji: "🤖" },
+    { id: "midjourney", label: "Midjourney", emoji: "🌌" },
+    { id: "3d",         label: "3D",         emoji: "🧊" },
+    { id: "music",      label: "Music",      emoji: "🎵" },
+];
 
 export default function Marketplace() {
     const [prompts, setPrompts] = useState([]);
     const [trending, setTrending] = useState([]);
     const [cat, setCat] = useState("all");
     const [q, setQ] = useState("");
+    const [inputQ, setInputQ] = useState("");
     const [loading, setLoading] = useState(true);
 
-    const fetchPrompts = async () => {
+    const fetchPrompts = async (category = cat, query = q) => {
         setLoading(true);
-        const params = {};
-        if (cat !== "all") params.category = cat;
-        if (q) params.q = q;
-        const r = await http.get("/prompts", { params });
-        setPrompts(r.data || []);
-        setLoading(false);
+        try {
+            const params = {};
+            if (category !== "all") params.category = category;
+            if (query) params.q = query;
+            const r = await http.get("/prompts", { params });
+            setPrompts(r.data || []);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        http.get("/creators/trending?limit=6").then((r) => setTrending(r.data || []));
+        http.get("/creators/trending?limit=6").then((r) => setTrending(r.data || [])).catch(() => {});
     }, []);
 
-    useEffect(() => { fetchPrompts(); /* eslint-disable-next-line */ }, [cat]);
+    useEffect(() => { fetchPrompts(cat, q); /* eslint-disable-next-line */ }, [cat]);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        setQ(inputQ);
+        fetchPrompts(cat, inputQ);
+    };
+
+    const clearSearch = () => {
+        setInputQ("");
+        setQ("");
+        fetchPrompts(cat, "");
+    };
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-12">
@@ -36,19 +66,27 @@ export default function Marketplace() {
                 <div>
                     <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF4F00] mb-2">Marketplace</div>
                     <h1 className="font-heading text-5xl md:text-6xl font-black tracking-tighter">Discover prompts.</h1>
-                    <p className="text-[#66635D] mt-3 max-w-md">Handcrafted by top prompt engineers. Preview free, unlock with credits or cash.</p>
+                    <p className="text-[#66635D] mt-3 max-w-md">
+                        Handcrafted by prompt experts. Browse free — unlock with credits.
+                    </p>
                 </div>
                 <form
-                    onSubmit={(e) => { e.preventDefault(); fetchPrompts(); }}
+                    onSubmit={handleSearch}
                     className="flex items-center bg-white border-2 border-[#1A1A1A] hard-shadow"
                 >
                     <Search className="w-4 h-4 mx-3 text-[#66635D]" />
                     <input
-                        value={q} onChange={(e) => setQ(e.target.value)}
+                        value={inputQ}
+                        onChange={(e) => setInputQ(e.target.value)}
                         placeholder="Search prompts..."
-                        className="py-3 pr-3 bg-transparent outline-none text-sm w-60"
+                        className="py-3 pr-2 bg-transparent outline-none text-sm w-56"
                         data-testid="marketplace-search-input"
                     />
+                    {inputQ && (
+                        <button type="button" onClick={clearSearch} className="px-2 text-[#66635D] hover:text-[#1A1A1A]">
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
                     <button type="submit" className="px-4 py-3 bg-[#1A1A1A] text-white text-sm font-bold" data-testid="marketplace-search-btn">GO</button>
                 </form>
             </div>
@@ -92,32 +130,58 @@ export default function Marketplace() {
                 </section>
             )}
 
-            {/* ========= Filters ========= */}
-            <div className="flex gap-2 flex-wrap mb-8 border-b-2 border-[#1A1A1A] pb-4">
-                <SlidersHorizontal className="w-4 h-4 self-center mr-2 text-[#66635D]" />
-                {CATS.map((c) => (
-                    <button
-                        key={c}
-                        onClick={() => setCat(c)}
-                        className={`px-4 py-1.5 border-2 border-[#1A1A1A] uppercase text-xs font-bold transition-colors ${
-                            cat === c ? "bg-[#1A1A1A] text-white" : "bg-white hover:bg-[#FFD600]"
-                        }`}
-                        data-testid={`cat-${c}`}
-                    >{c}</button>
-                ))}
+            {/* ========= Category Filters ========= */}
+            <div className="mb-8">
+                <div className="flex items-center gap-2 mb-3">
+                    <SlidersHorizontal className="w-4 h-4 text-[#66635D]" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#66635D]">Browse by category</span>
+                </div>
+                <div className="flex gap-2 flex-wrap border-b-2 border-[#1A1A1A] pb-4">
+                    {CATS.map((c) => (
+                        <button
+                            key={c.id}
+                            onClick={() => setCat(c.id)}
+                            className={`px-4 py-1.5 border-2 border-[#1A1A1A] text-xs font-bold transition-colors ${
+                                cat === c.id ? "bg-[#1A1A1A] text-white" : "bg-white hover:bg-[#FFD600]"
+                            }`}
+                            data-testid={`cat-${c.id}`}
+                        >
+                            <span className="mr-1">{c.emoji}</span>{c.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* ========= Results header ========= */}
+            <div className="flex items-center gap-2 mb-5">
+                <TrendingUp className="w-5 h-5 text-[#0047FF]" />
+                <h2 className="font-heading text-2xl font-bold tracking-tight">
+                    {cat === "all" ? "All Prompts" : `${CATS.find(c => c.id === cat)?.label} Prompts`}
+                    {q && <span className="text-[#66635D] text-lg font-normal"> · "{q}"</span>}
+                </h2>
+                {!loading && <span className="text-xs font-bold text-[#66635D] ml-auto">{prompts.length} results</span>}
             </div>
 
             {/* ========= Prompts grid ========= */}
-            <div className="flex items-center gap-2 mb-5">
-                <TrendingUp className="w-5 h-5 text-[#0047FF]" />
-                <h2 className="font-heading text-2xl font-bold tracking-tight">All Prompts</h2>
-            </div>
             {loading ? (
-                <div className="py-16 text-center font-heading text-xl">Loading prompts…</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className="bg-white border-2 border-[#1A1A1A] h-72 animate-pulse" />
+                    ))}
+                </div>
             ) : prompts.length === 0 ? (
                 <div className="py-16 text-center">
-                    <div className="font-heading text-2xl font-bold">No prompts yet.</div>
+                    <div className="text-4xl mb-4">🔍</div>
+                    <div className="font-heading text-2xl font-bold">No prompts found.</div>
                     <p className="text-[#66635D] mt-2">Try a different category or search term.</p>
+                    {(cat !== "all" || q) && (
+                        <button
+                            onClick={() => { setCat("all"); setQ(""); setInputQ(""); }}
+                            className="mt-4 btn-ink"
+                        >
+                            Clear filters
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

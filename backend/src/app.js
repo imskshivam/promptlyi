@@ -10,6 +10,10 @@ const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
+// ─── Webhook MUST be mounted BEFORE express.json() so raw body is preserved ───
+// The route itself uses express.raw() internally per-endpoint.
+app.use("/api/webhooks", require("./routes/webhook"));
+
 app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 app.use(cors({
@@ -32,6 +36,8 @@ api.use("/dashboard", require("./routes/dashboard"));
 api.use("/payouts", require("./routes/payouts"));
 api.use("/custom-works", require("./routes/customWorks"));
 api.use("/dev", require("./routes/dev"));
+// Webhook admin endpoints (events list, transactions)
+api.use("/webhooks", require("./routes/webhook"));
 
 app.use("/api", api);
 
