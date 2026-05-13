@@ -130,7 +130,7 @@ router.post("/prompts", getCurrentUser, requirePromptUser, asyncH(async (req, re
         // Pricing — credits only
         price_credits: priceCredits,
         // Legacy fields kept for backwards-compat
-        price_inr: 0,
+        price_usd: 0,
         is_restricted: priceCredits > 0,
         credits_required: priceCredits,
         requires_user_media: ["none", "image", "video"].includes(b.requires_user_media) ? b.requires_user_media : "none",
@@ -201,7 +201,7 @@ router.post("/prompts/purchase", getCurrentUser, asyncH(async (req, res) => {
     if (cost === 0) {
         const purchase = {
             id: uuidv4(), user_id: req.user.id, prompt_id, creator_id: p.creator_id,
-            method: "free", amount_inr: 0, credits_used: 0, created_at: iso(utcNow()),
+            method: "free", amount_usd: 0, credits_used: 0, created_at: iso(utcNow()),
         };
         await db.collection("purchases").insertOne({ ...purchase });
         await db.collection("prompts").updateOne({ id: prompt_id }, { $inc: { downloads: 1 } });
@@ -221,7 +221,7 @@ router.post("/prompts/purchase", getCurrentUser, asyncH(async (req, res) => {
     });
     const purchase = {
         id: uuidv4(), user_id: req.user.id, prompt_id, creator_id: p.creator_id,
-        method: "credits", amount_inr: 0, credits_used: cost, created_at: iso(utcNow()),
+        method: "credits", amount_usd: 0, credits_used: cost, created_at: iso(utcNow()),
     };
     await db.collection("purchases").insertOne({ ...purchase });
     await db.collection("prompts").updateOne({ id: prompt_id }, { $inc: { downloads: 1 } });

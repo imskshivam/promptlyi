@@ -95,7 +95,7 @@ export default function CreatorDashboard() {
         const amt = parseInt(payoutAmount);
         if (!amt || amt <= 0) { toast.error("Enter a valid amount"); return; }
         try {
-            await http.post("/payouts/request", { amount_inr: amt });
+            await http.post("/payouts/request", { amount_usd: amt });
             toast.success("Payout requested! (MOCKED)");
             setPayoutAmount(""); fetchAll();
         } catch (e) { toast.error(e.response?.data?.detail || "Failed"); }
@@ -116,9 +116,9 @@ export default function CreatorDashboard() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                 <StatCard label="Prompts live" value={stats.prompts_count || 0} icon={Package} bg="bg-white" />
-                <StatCard label="Sales this month" value={stats.earnings_this_month_inr || 0} icon={TrendingUp} bg="bg-[#FFD600]" />
+                <StatCard label="Sales this month" value={stats.earnings_this_month_usd || 0} icon={TrendingUp} bg="bg-[#FFD600]" />
                 <StatCard label="Total downloads" value={stats.total_downloads || 0} icon={IndianRupee} bg="bg-[#0047FF] text-white" />
-                <StatCard label="Available balance" value={`₹${stats.available_balance_inr || 0}`} icon={Wallet} bg="bg-white" />
+                <StatCard label="Available balance" value={`$${stats.available_balance_usd || 0}`} icon={Wallet} bg="bg-white" />
             </div>
 
             <div className="flex gap-1 mb-6 border-b-2 border-[#1A1A1A] flex-wrap">
@@ -158,7 +158,7 @@ export default function CreatorDashboard() {
                                         <div className="flex-1 min-w-0">
                                             <div className="font-heading font-bold text-sm truncate">{p.title}</div>
                                             <div className="text-xs text-[#66635D] truncate">
-                                                {p.is_restricted ? `${p.credits_required} credits` : `₹${p.price_inr}`} · {p.downloads || 0} downloads
+                                                {p.is_restricted ? `${p.credits_required} credits` : `$${p.price_usd}`} · {p.downloads || 0} downloads
                                             </div>
                                         </div>
                                         <span className="text-xs uppercase font-bold tracking-wider text-[#0047FF]">{p.category}</span>
@@ -180,11 +180,11 @@ export default function CreatorDashboard() {
                             <div className="space-y-3">
                                 <div>
                                     <div className="text-xs text-white/60 uppercase tracking-wider">This month</div>
-                                    <div className="font-heading font-black text-4xl">₹{stats.earnings_this_month_inr || 0}</div>
+                                    <div className="font-heading font-black text-4xl">${stats.earnings_this_month_usd || 0}</div>
                                 </div>
                                 <div className="border-t border-white/10 pt-3">
                                     <div className="text-xs text-white/60 uppercase tracking-wider">Total earned</div>
-                                    <div className="font-heading font-black text-2xl">₹{stats.earnings_inr || 0}</div>
+                                    <div className="font-heading font-black text-2xl">${stats.earnings_usd || 0}</div>
                                 </div>
                                 <div className="border-t border-white/10 pt-3 grid grid-cols-2 gap-2 text-xs">
                                     <div>
@@ -193,7 +193,7 @@ export default function CreatorDashboard() {
                                     </div>
                                     <div>
                                         <div className="text-white/60 uppercase tracking-wider">Paid out</div>
-                                        <div className="font-bold text-base">₹{stats.paid_out_inr || 0}</div>
+                                        <div className="font-bold text-base">${stats.paid_out_usd || 0}</div>
                                     </div>
                                 </div>
                             </div>
@@ -204,8 +204,8 @@ export default function CreatorDashboard() {
                                 <div className="text-xs uppercase font-bold tracking-wider text-[#FF4F00]">Payout progress</div>
                                 <Banknote className="w-5 h-5 text-[#FF4F00]" />
                             </div>
-                            <div className="font-heading font-black text-3xl">₹{stats.available_balance_inr || 0}</div>
-                            <div className="text-xs text-[#66635D] mt-1">of ₹{stats.min_payout_inr || 8500} minimum (~$100)</div>
+                            <div className="font-heading font-black text-3xl">${stats.available_balance_usd || 0}</div>
+                            <div className="text-xs text-[#66635D] mt-1">of ${stats.min_payout_usd || 8500} minimum (~$100)</div>
                             <div className="mt-3 h-3 bg-[#EFEBE1] border-2 border-[#1A1A1A] overflow-hidden">
                                 <div className={`h-full ${stats.payout_eligible ? "bg-[#FFD600]" : "bg-[#FF4F00]"}`} style={{ width: `${stats.payout_progress_pct || 0}%` }} />
                             </div>
@@ -215,7 +215,7 @@ export default function CreatorDashboard() {
                                 </button>
                             ) : (
                                 <div className="mt-3 text-xs text-[#66635D]">
-                                    Earn <span className="font-bold text-[#1A1A1A]">₹{Math.max(0, (stats.min_payout_inr || 8500) - (stats.available_balance_inr || 0))}</span> more to unlock payout. 5% commission applies on cashout.
+                                    Earn <span className="font-bold text-[#1A1A1A]">${Math.max(0, (stats.min_payout_usd || 8500) - (stats.available_balance_usd || 0))}</span> more to unlock payout. 5% commission applies on cashout.
                                 </div>
                             )}
                         </div>
@@ -349,7 +349,7 @@ export default function CreatorDashboard() {
                                 )}
                             </div>
                             <div className="text-sm">
-                                {p.is_restricted ? <span className="text-[#0047FF] font-bold">{p.credits_required} cr</span> : <span>₹{p.price_inr}</span>}
+                                {p.is_restricted ? <span className="text-[#0047FF] font-bold">{p.credits_required} cr</span> : <span>${p.price_usd}</span>}
                             </div>
                             <div className="text-xs text-[#66635D]">{p.downloads || 0} dl</div>
                             <button onClick={() => remove(p.id)} className="p-2 border-2 border-[#1A1A1A] hover:bg-red-500 hover:text-white" data-testid={`del-${p.id}`}>
@@ -377,9 +377,9 @@ export default function CreatorDashboard() {
                         </div>
                     </div>
                     <div className="grid sm:grid-cols-3 gap-4 mb-6">
-                        <StatCard label={`Revenue · ${interval}`} value={`₹${totalRevenue}`} icon={IndianRupee} bg="bg-[#FFD600]" />
+                        <StatCard label={`Revenue · ${interval}`} value={`$${totalRevenue}`} icon={IndianRupee} bg="bg-[#FFD600]" />
                         <StatCard label="Sales count" value={totalSales} icon={TrendingUp} bg="bg-white" />
-                        <StatCard label="Available payout" value={`₹${stats.available_balance_inr || 0}`} icon={Wallet} bg="bg-[#0047FF] text-white" />
+                        <StatCard label="Available payout" value={`$${stats.available_balance_usd || 0}`} icon={Wallet} bg="bg-[#0047FF] text-white" />
                     </div>
                     <div className="bg-white border-2 border-[#1A1A1A] hard-shadow p-6">
                         <ResponsiveContainer width="100%" height={280}>
@@ -419,7 +419,7 @@ export default function CreatorDashboard() {
                                 <div className="text-xs text-[#66635D]">Sold to {s.buyer?.name} · {new Date(s.created_at).toLocaleString()}</div>
                             </div>
                             <div className="text-sm font-bold">
-                                {s.method === "credits" ? <span className="text-[#0047FF]">{s.credits_used} credits</span> : <span>+₹{s.amount_inr}</span>}
+                                {s.method === "credits" ? <span className="text-[#0047FF]">{s.credits_used} credits</span> : <span>+${s.amount_usd}</span>}
                             </div>
                         </div>
                     ))}
@@ -432,21 +432,21 @@ export default function CreatorDashboard() {
                     <div className="md:col-span-5 bg-white border-2 border-[#1A1A1A] hard-shadow p-6 space-y-3">
                         <div className="font-heading font-black text-2xl flex items-center gap-2"><Banknote className="w-5 h-5 text-[#FF4F00]" /> Request payout</div>
                         <div className="text-sm text-[#66635D]">
-                            Available: <span className="font-bold text-[#1A1A1A]">₹{stats.available_balance_inr || 0}</span> ·
-                            Minimum: <span className="font-bold text-[#1A1A1A]">₹{stats.min_payout_inr || 8500}</span> ·
+                            Available: <span className="font-bold text-[#1A1A1A]">${stats.available_balance_usd || 0}</span> ·
+                            Minimum: <span className="font-bold text-[#1A1A1A]">${stats.min_payout_usd || 8500}</span> ·
                             Commission: <span className="font-bold">5%</span>
                         </div>
                         {!stats.payout_eligible && (
                             <div className="bg-[#EFEBE1] border-2 border-[#1A1A1A] p-3 text-xs">
-                                Earn <span className="font-bold">₹{Math.max(0, (stats.min_payout_inr || 8500) - (stats.available_balance_inr || 0))}</span> more to unlock payout (~$100 minimum threshold).
+                                Earn <span className="font-bold">${Math.max(0, (stats.min_payout_usd || 8500) - (stats.available_balance_usd || 0))}</span> more to unlock payout (~$100 minimum threshold).
                             </div>
                         )}
-                        <input type="number" placeholder={`Amount ₹ (min ${stats.min_payout_inr || 8500})`} value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} disabled={!stats.payout_eligible} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0] disabled:opacity-50" data-testid="payout-amount" />
+                        <input type="number" placeholder={`Amount $ (min ${stats.min_payout_usd || 8500})`} value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} disabled={!stats.payout_eligible} className="w-full px-3 py-2 border-2 border-[#1A1A1A] bg-[#F7F5F0] disabled:opacity-50" data-testid="payout-amount" />
                         {parseInt(payoutAmount) > 0 && (
                             <div className="bg-[#EFEBE1] border-2 border-[#1A1A1A] p-3 text-sm space-y-1 font-mono">
-                                <div className="flex justify-between"><span>Requested</span><span>₹{payoutAmount}</span></div>
-                                <div className="flex justify-between text-[#FF4F00]"><span>− Commission (5%)</span><span>−₹{commission}</span></div>
-                                <div className="flex justify-between border-t border-[#1A1A1A] pt-1 mt-1 font-bold"><span>You receive</span><span>₹{(parseInt(payoutAmount) || 0) - commission}</span></div>
+                                <div className="flex justify-between"><span>Requested</span><span>${payoutAmount}</span></div>
+                                <div className="flex justify-between text-[#FF4F00]"><span>− Commission (5%)</span><span>−${commission}</span></div>
+                                <div className="flex justify-between border-t border-[#1A1A1A] pt-1 mt-1 font-bold"><span>You receive</span><span>${(parseInt(payoutAmount) || 0) - commission}</span></div>
                             </div>
                         )}
                         <button onClick={requestPayout} disabled={!stats.payout_eligible} className="btn-vermilion w-full disabled:opacity-50 disabled:cursor-not-allowed" data-testid="payout-submit">Request Payout</button>
@@ -459,11 +459,11 @@ export default function CreatorDashboard() {
                                 {payouts.map((p) => (
                                     <div key={p.id} className="bg-white border-2 border-[#1A1A1A] p-4 flex items-center justify-between" data-testid={`payout-${p.id}`}>
                                         <div>
-                                            <div className="font-heading font-bold">₹{p.amount_inr}</div>
+                                            <div className="font-heading font-bold">${p.amount_usd}</div>
                                             <div className="text-xs text-[#66635D]">{new Date(p.requested_at).toLocaleString()}</div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-xs text-[#66635D]">−5% = <span className="font-bold text-[#1A1A1A]">₹{p.net_inr}</span></div>
+                                            <div className="text-xs text-[#66635D]">−5% = <span className="font-bold text-[#1A1A1A]">${p.net_usd}</span></div>
                                             <div className={`mt-1 inline-block px-2 py-0.5 text-[10px] font-bold uppercase border-2 border-[#1A1A1A] ${p.status === "processed" ? "bg-[#FFD600]" : "bg-white"}`}>{p.status}</div>
                                         </div>
                                     </div>

@@ -15,7 +15,7 @@ const SAMPLES = [
         content: "cinematic cyberpunk tokyo at dusk, wet pavement, neon reflections, anamorphic lens, 8k, hyper realistic --ar 16:9 --v 6",
         preview_url: "https://images.unsplash.com/photo-1693487048787-a19cc08ded79?crop=entropy&cs=srgb&fm=jpg&w=1200&q=80",
         media_type: "image", category: "image", tags: ["midjourney", "cyberpunk", "art"],
-        price_inr: 149, is_restricted: false, requires_user_media: "none",
+        price_usd: 149, is_restricted: false, requires_user_media: "none",
     },
     {
         title: "SaaS Landing Page Copy Generator",
@@ -23,7 +23,7 @@ const SAMPLES = [
         content: "Act as a senior SaaS copywriter. Given a product description, produce a hero headline (max 9 words), sub-headline, three feature blurbs and a CTA...",
         preview_url: "https://images.unsplash.com/photo-1605106702842-01a887a31122?crop=entropy&cs=srgb&fm=jpg&w=1200&q=80",
         media_type: "image", category: "marketing", tags: ["copywriting", "saas"],
-        price_inr: 0, is_restricted: true, requires_user_media: "none",
+        price_usd: 0, is_restricted: true, requires_user_media: "none",
     },
     {
         title: "Abstract 3D Product Renders",
@@ -31,7 +31,7 @@ const SAMPLES = [
         content: "abstract 3d render of product in image, brand color {{COLOR}}, soft studio lighting, shallow depth of field, clay material, octane render --ar 1:1",
         preview_url: "https://images.unsplash.com/photo-1776981986367-09705e5c6872?crop=entropy&cs=srgb&fm=jpg&w=1200&q=80",
         media_type: "image", category: "design", tags: ["3d", "render", "branding"],
-        price_inr: 249, is_restricted: false, requires_user_media: "image",
+        price_usd: 249, is_restricted: false, requires_user_media: "image",
         user_media_instructions: "Upload a transparent PNG of your product. Best on neutral backgrounds.",
     },
     {
@@ -40,7 +40,7 @@ const SAMPLES = [
         content: "You are a principal engineer. Given {{IDEA}}, produce: 1) domain model 2) REST endpoints 3) react component tree 4) deployment plan. Be detailed, step-by-step, output JSON.",
         preview_url: "https://images.unsplash.com/photo-1556157382-97eda2d62296?crop=entropy&cs=srgb&fm=jpg&w=1200&q=80",
         media_type: "image", category: "code", tags: ["architecture", "saas", "engineering"],
-        price_inr: 0, is_restricted: true, requires_user_media: "none",
+        price_usd: 0, is_restricted: true, requires_user_media: "none",
     },
 ];
 
@@ -92,7 +92,7 @@ router.post("/seed", asyncH(async (req, res) => {
             id: uuidv4(), user_id: demo.id,
             title: "Build full-stack prompt workflow automation",
             description: "Need a prompt engineer to design a multi-step chain for my SaaS onboarding emails.",
-            budget_inr: 15000, deadline_days: 14, category: "engineering",
+            budget_usd: 15000, deadline_days: 14, category: "engineering",
             status: "open", applicants: [], created_at: iso(utcNow()),
         });
     }

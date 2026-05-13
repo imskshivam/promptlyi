@@ -72,8 +72,8 @@ export default function UserDashboard() {
                                     <Coins className="w-8 h-8 text-[#FFD600]" />{p.credits}
                                 </div>
                                 <div className="text-sm text-[#66635D] mt-1">credits</div>
-                                <div className="mt-4 font-heading text-3xl font-black">₹{p.price_inr}</div>
-                                <div className="text-xs text-[#66635D] mb-4">≈ ₹{(p.price_inr / p.credits).toFixed(2)} per credit</div>
+                                <div className="mt-4 font-heading text-3xl font-black">${p.price_usd}</div>
+                                <div className="text-xs text-[#66635D] mb-4">≈ ${(p.price_usd / p.credits).toFixed(2)} per credit</div>
                                 <button onClick={() => buyPack(p.id)} className="btn-vermilion w-full mt-auto" data-testid={`buy-pack-${p.id}`}>
                                     Buy Pack <ArrowRight className="w-4 h-4 inline ml-1" />
                                 </button>
@@ -121,7 +121,7 @@ export default function UserDashboard() {
                                 ) : pu.method === "free" ? (
                                     <span className="text-[#FF4F00]">FREE</span>
                                 ) : (
-                                    <span>₹{pu.amount_inr}</span>
+                                    <span>${pu.amount_usd}</span>
                                 )}
                             </div>
                             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />

@@ -8,9 +8,9 @@ const { createCheckout, DODO_PRODUCTS } = require("../services/dodoService");
 const router = express.Router();
 
 const CREDIT_PACKS = {
-    starter: { id: "starter", credits: 100,  price_inr: 199,  label: "Starter Pack", product_key: "pack_starter" },
-    pro:     { id: "pro",     credits: 500,  price_inr: 799,  label: "Pro Pack",     product_key: "pack_pro" },
-    max:     { id: "max",     credits: 1500, price_inr: 1999, label: "Max Pack",     product_key: "pack_max" },
+    starter: { id: "starter", credits: 100,  price_usd: 3,  label: "Starter Pack", product_key: "pack_starter" },
+    pro:     { id: "pro",     credits: 500,  price_usd: 10,  label: "Pro Pack",     product_key: "pack_pro" },
+    max:     { id: "max",     credits: 1500, price_usd: 25, label: "Max Pack",     product_key: "pack_max" },
 };
 
 router.get("/packs", asyncH(async (req, res) => {
@@ -27,7 +27,7 @@ router.post("/buy", getCurrentUser, asyncH(async (req, res) => {
         returnPath: "/payments/success",
         metadata: {
             kind: "credit_pack", user_id: req.user.id, pack_id: pack.id,
-            credits: String(pack.credits), amount_inr: String(pack.price_inr),
+            credits: String(pack.credits), amount_usd: String(pack.price_usd),
         },
     });
     res.json({ ok: true, redirect: true, checkout_url: sess.checkout_url, session_id: sess.session_id });

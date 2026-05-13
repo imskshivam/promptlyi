@@ -82,7 +82,7 @@ async function handlePaymentSucceeded(db, event, webhookId) {
     const paymentId  = data.payment_id || data.id;
     const metadata   = data.metadata   || {};
     const amountTotal = data.total_amount || data.amount || 0;       // in paise/cents
-    const currency    = (data.currency || "INR").toUpperCase();
+    const currency    = (data.currency || "USD").toUpperCase();
 
     // Save raw transaction
     await db.collection("transactions").updateOne(
@@ -122,7 +122,7 @@ async function handlePaymentSucceeded(db, event, webhookId) {
             amount: pack.credits,
             type: "purchase",
             pack_id: pack.id,
-            price_inr: pack.price_inr,
+            price_usd: pack.price_usd,
             payment_id: paymentId,
             created_at: iso(utcNow()),
         });
@@ -156,7 +156,7 @@ async function handlePaymentSucceeded(db, event, webhookId) {
                 prompt_id: promptId,
                 creator_id: prm.creator_id,
                 method: "money",
-                amount_inr: parseInt(metadata.amount_inr || 0),
+                amount_usd: parseInt(metadata.amount_usd || 0),
                 credits_used: 0,
                 payment_id: paymentId,
                 created_at: iso(utcNow()),
@@ -191,7 +191,7 @@ async function handleSubscriptionActive(db, event, webhookId) {
                 event_type: event.type || "subscription.active",
                 payment_id: subscriptionId,
                 amount: data.total_amount || 0,
-                currency: (data.currency || "INR").toUpperCase(),
+                currency: (data.currency || "USD").toUpperCase(),
                 status: "active",
                 metadata,
                 created_at: iso(utcNow()),
@@ -245,7 +245,7 @@ async function handleRefund(db, event, webhookId) {
                 payment_id: refundId,
                 original_payment_id: paymentId,
                 amount: -(data.amount || 0),
-                currency: (data.currency || "INR").toUpperCase(),
+                currency: (data.currency || "USD").toUpperCase(),
                 status: "refunded",
                 metadata,
                 created_at: iso(utcNow()),

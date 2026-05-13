@@ -37,7 +37,7 @@ export default function Pricing() {
                         <div className="text-xs uppercase tracking-wider font-bold text-[#0047FF]">{p.label}</div>
                         <div className="mt-4 font-heading font-black text-6xl inline-flex items-center gap-2"><Coins className="w-10 h-10 text-[#FFD600]" />{p.credits}</div>
                         <div className="text-sm text-[#66635D]">credits</div>
-                        <div className="mt-6 font-heading text-3xl font-black">₹{p.price_inr}</div>
+                        <div className="mt-6 font-heading text-3xl font-black">${p.price_usd}</div>
                         <button onClick={() => buyPack(p.id)} className="mt-8 w-full btn-vermilion" data-testid={`pack-btn-${p.id}`}>Buy Now</button>
                     </div>
                 ))}
@@ -45,7 +45,7 @@ export default function Pricing() {
 
             <div className="mt-16 bg-[#1A1A1A] text-white p-10 text-center border-2 border-[#1A1A1A]">
                 <h3 className="font-heading text-3xl font-black">Dynamic pricing by country</h3>
-                <p className="mt-2 text-white/70 text-sm max-w-xl mx-auto">Prices shown in INR. Final checkout automatically converts based on your country via our payment processor.</p>
+                <p className="mt-2 text-white/70 text-sm max-w-xl mx-auto">Prices shown in USD. Final checkout automatically converts based on your country via our payment processor.</p>
             </div>
         </div>
     );

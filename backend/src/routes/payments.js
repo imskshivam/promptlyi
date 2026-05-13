@@ -36,7 +36,7 @@ router.post("/confirm", getCurrentUser, asyncH(async (req, res) => {
             await db.collection("users").updateOne({ id: req.user.id }, { $inc: { credits: pack.credits } });
             await db.collection("credit_transactions").insertOne({
                 id: uuidv4(), user_id: req.user.id, amount: pack.credits, type: "purchase",
-                pack_id: pack.id, price_inr: pack.price_inr, payment_id: pid, created_at: iso(utcNow()),
+                pack_id: pack.id, price_usd: pack.price_usd, payment_id: pid, created_at: iso(utcNow()),
             });
             result.credits_added = pack.credits;
         }
@@ -50,7 +50,7 @@ router.post("/confirm", getCurrentUser, asyncH(async (req, res) => {
             );
             await db.collection("subscriptions").insertOne({
                 id: uuidv4(), user_id: req.user.id, plan_id: plan.id, status: "active",
-                starts_at: iso(utcNow()), expires_at: iso(expiresAt), price_inr: plan.price_inr, payment_id: pid,
+                starts_at: iso(utcNow()), expires_at: iso(expiresAt), price_usd: plan.price_usd, payment_id: pid,
             });
             result.plan_id = plan.id;
         }
@@ -61,7 +61,7 @@ router.post("/confirm", getCurrentUser, asyncH(async (req, res) => {
             if (!owned) {
                 await db.collection("purchases").insertOne({
                     id: uuidv4(), user_id: req.user.id, prompt_id: md.prompt_id,
-                    creator_id: prm.creator_id, method: "money", amount_inr: prm.price_inr,
+                    creator_id: prm.creator_id, method: "money", amount_usd: prm.price_usd,
                     credits_used: 0, payment_id: pid, created_at: iso(utcNow()),
                 });
                 await db.collection("prompts").updateOne({ id: md.prompt_id }, { $inc: { downloads: 1 } });

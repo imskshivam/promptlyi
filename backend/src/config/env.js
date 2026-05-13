@@ -24,5 +24,5 @@ module.exports = {
     },
 
     COMMISSION_RATE: 0.05,
-    MIN_PAYOUT_INR: 8500, // ~ $100
+    MIN_PAYOUT_USD: 100, // $100
 };

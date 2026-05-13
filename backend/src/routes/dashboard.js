@@ -4,7 +4,7 @@ const { getDb } = require("../config/db");
 const { getCurrentUser, requirePromptUser } = require("../middleware/auth");
 const { asyncH } = require("../middleware/errorHandler");
 const { iso, utcNow, ymd, yearMonth, yearWeek } = require("../utils/time");
-const { MIN_PAYOUT_INR } = require("../config/env");
+const { MIN_PAYOUT_USD } = require("../config/env");
 
 const router = express.Router();
 
@@ -18,27 +18,27 @@ router.get("/creator-stats", getCurrentUser, requirePromptUser, asyncH(async (re
     }
     let earnings = 0, earningsThisMonth = 0;
     const monthStart = new Date(Date.UTC(utcNow().getUTCFullYear(), utcNow().getUTCMonth(), 1));
-    for await (const p of db.collection("purchases").find({ creator_id: userId }, { projection: { _id: 0, amount_inr: 1, created_at: 1 } })) {
-        const amt = p.amount_inr || 0;
+    for await (const p of db.collection("purchases").find({ creator_id: userId }, { projection: { _id: 0, amount_usd: 1, created_at: 1 } })) {
+        const amt = p.amount_usd || 0;
         earnings += amt;
         const ts = new Date(p.created_at);
         if (!isNaN(ts.getTime()) && ts >= monthStart) earningsThisMonth += amt;
     }
     let paidOut = 0;
-    for await (const po of db.collection("payouts").find({ user_id: userId, status: { $in: ["pending", "processed"] } }, { projection: { _id: 0, amount_inr: 1 } })) {
-        paidOut += po.amount_inr || 0;
+    for await (const po of db.collection("payouts").find({ user_id: userId, status: { $in: ["pending", "processed"] } }, { projection: { _id: 0, amount_usd: 1 } })) {
+        paidOut += po.amount_usd || 0;
     }
     const available = Math.max(0, earnings - paidOut);
     res.json({
         prompts_count: promptsCount,
         total_downloads: totalDownloads,
-        earnings_inr: earnings,
-        earnings_this_month_inr: earningsThisMonth,
-        paid_out_inr: paidOut,
-        available_balance_inr: available,
-        min_payout_inr: MIN_PAYOUT_INR,
-        payout_eligible: available >= MIN_PAYOUT_INR,
-        payout_progress_pct: MIN_PAYOUT_INR ? Math.min(100, Math.round((available * 100) / MIN_PAYOUT_INR)) : 100,
+        earnings_usd: earnings,
+        earnings_this_month_usd: earningsThisMonth,
+        paid_out_usd: paidOut,
+        available_balance_usd: available,
+        min_payout_usd: MIN_PAYOUT_USD,
+        payout_eligible: available >= MIN_PAYOUT_USD,
+        payout_progress_pct: MIN_PAYOUT_USD ? Math.min(100, Math.round((available * 100) / MIN_PAYOUT_USD)) : 100,
         subscription_plan: req.user.subscription_plan || null,
     });
 }));
@@ -79,7 +79,7 @@ router.get("/creator-revenue", getCurrentUser, requirePromptUser, asyncH(async (
         if (isNaN(ts.getTime())) continue;
         const key = keyOf(ts);
         if (series[key]) {
-            series[key].revenue += p.amount_inr || 0;
+            series[key].revenue += p.amount_usd || 0;
             series[key].sales += 1;
             series[key].credits += p.credits_used || 0;
         }

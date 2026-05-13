@@ -24,7 +24,7 @@ export default function Landing() {
                 <div className="max-w-7xl mx-auto px-6 py-16 md:py-24 grid md:grid-cols-12 gap-8 items-center relative">
                     <div className="md:col-span-7 animate-fadeup">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFD600] border-2 border-[#1A1A1A] text-xs font-bold uppercase tracking-wider mb-6">
-                            <Sparkles className="w-3 h-3" /> Top earners making ₹3L/mo
+                            <Sparkles className="w-3 h-3" /> Top earners making $4,000/mo
                         </div>
                         <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9]">
                             Earn money <br />
@@ -44,7 +44,7 @@ export default function Landing() {
                         <div className="mt-12 flex items-center gap-8 text-sm text-[#66635D]">
                             <div><span className="font-heading font-black text-2xl text-[#1A1A1A]">12K+</span> prompts</div>
                             <div><span className="font-heading font-black text-2xl text-[#1A1A1A]">3.4K</span> creators</div>
-                            <div><span className="font-heading font-black text-2xl text-[#1A1A1A]">₹1.2Cr</span> paid out</div>
+                            <div><span className="font-heading font-black text-2xl text-[#1A1A1A]">$150K+</span> paid out</div>
                         </div>
                     </div>
                     <div className="md:col-span-5 relative animate-fadeup">
@@ -52,7 +52,7 @@ export default function Landing() {
                             <img src={HERO_BG} alt="abstract" className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-90" />
                             <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#1A1A1A] to-transparent">
                                 <div className="inline-flex items-center gap-2 text-[#FFD600] text-xs font-bold uppercase">featured creator</div>
-                                <div className="text-white font-heading text-2xl font-bold mt-1">Arjun V. • ₹82,400 this month</div>
+                                <div className="text-white font-heading text-2xl font-bold mt-1">Arjun V. • $1,200 this month</div>
                             </div>
                         </div>
                         <div className="absolute -bottom-6 -left-6 bg-[#FFD600] border-2 border-[#1A1A1A] px-4 py-3 hard-shadow text-xs font-bold uppercase">
@@ -99,7 +99,7 @@ export default function Landing() {
                     {[
                         { n: "01", t: "Create a profile", d: "Sign up as a Business creator. List prompts with image or video examples that show what they produce.", icon: Users, accent: "bg-[#FF4F00]" },
                         { n: "02", t: "Price with our engine", d: "As you write, our credit engine auto-assigns a fair credit cost based on token complexity. Restrict premium prompts to credits.", icon: Zap, accent: "bg-[#0047FF]" },
-                        { n: "03", t: "Earn when users buy", d: "Users buy prompts outright in ₹ or spend credits. You keep 85%. Dynamic pricing by country is built-in.", icon: Coins, accent: "bg-[#FFD600]" },
+                        { n: "03", t: "Earn when users buy", d: "Users buy prompts outright in $ or spend credits. You keep 85%. Dynamic pricing by country is built-in.", icon: Coins, accent: "bg-[#FFD600]" },
                     ].map((s, idx) => (
                         <div key={s.n} className="bg-white border-2 border-[#1A1A1A] hard-shadow p-6 relative" data-testid={`how-step-${idx}`}>
                             <div className={`${s.accent} text-[#1A1A1A] inline-flex items-center justify-center w-14 h-14 border-2 border-[#1A1A1A] font-heading font-black text-2xl mb-4`}>{s.n}</div>
@@ -172,7 +172,7 @@ export default function Landing() {
                     </div>
                     <div className="mt-12 grid md:grid-cols-3 gap-5">
                         {[
-                            { q: "I made ₹48,000 in my first month listing midjourney prompts. The credit engine is a genius idea.", n: "Priya M.", r: "Illustrator" },
+                            { q: "I made $4,800 in my first month listing midjourney prompts. The credit engine is a genius idea.", n: "Priya M.", r: "Illustrator" },
                             { q: "Restricted prompts are a game-changer. I keep my best IP behind credits and still get paid.", n: "Rahul S.", r: "Prompt Engineer" },
                             { q: "Custom work requests brought me 3 clients in a week. The marketplace literally hands me leads.", n: "Meera K.", r: "Content strategist" },
                         ].map((t, i) => (

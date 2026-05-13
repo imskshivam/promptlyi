@@ -8,9 +8,9 @@ const { createCheckout, DODO_PRODUCTS } = require("../services/dodoService");
 const router = express.Router();
 
 const PLANS = {
-    basic: { id: "basic", name: "Creator Basic", price_inr: 199, features: ["List up to 10 prompts", "Basic analytics", "Standard payouts"], product_key: "sub_basic" },
-    pro:   { id: "pro",   name: "Creator Pro",   price_inr: 499, features: ["Unlimited prompts", "Restricted prompts (credits)", "Advanced analytics", "Priority support"], product_key: "sub_pro" },
-    elite: { id: "elite", name: "Creator Elite", price_inr: 899, features: ["Everything in Pro", "Featured on homepage", "Custom storefront", "API access", "1:1 onboarding"], product_key: "sub_elite" },
+    basic: { id: "basic", name: "Creator Basic", price_usd: 3, features: ["List up to 10 prompts", "Basic analytics", "Standard payouts"], product_key: "sub_basic" },
+    pro:   { id: "pro",   name: "Creator Pro",   price_usd: 6, features: ["Unlimited prompts", "Restricted prompts (credits)", "Advanced analytics", "Priority support"], product_key: "sub_pro" },
+    elite: { id: "elite", name: "Creator Elite", price_usd: 10, features: ["Everything in Pro", "Featured on homepage", "Custom storefront", "API access", "1:1 onboarding"], product_key: "sub_elite" },
 };
 
 router.get("/plans", asyncH(async (req, res) => {
@@ -27,7 +27,7 @@ router.post("/subscribe", getCurrentUser, asyncH(async (req, res) => {
         returnPath: "/payments/success",
         metadata: {
             kind: "subscription", user_id: req.user.id, plan_id: plan.id,
-            amount_inr: String(plan.price_inr),
+            amount_usd: String(plan.price_usd),
         },
     });
     res.json({ ok: true, redirect: true, checkout_url: sess.checkout_url, session_id: sess.session_id });

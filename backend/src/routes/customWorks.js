@@ -25,13 +25,13 @@ router.get("/", asyncH(async (req, res) => {
 router.post("/", getCurrentUser, asyncH(async (req, res) => {
     const db = getDb();
     const b = req.body || {};
-    if (!b.title || !b.description || !b.budget_inr) throw new HttpError(400, "Missing fields");
+    if (!b.title || !b.description || !b.budget_usd) throw new HttpError(400, "Missing fields");
     const w = {
         id: uuidv4(),
         user_id: req.user.id,
         title: b.title,
         description: b.description,
-        budget_inr: parseInt(b.budget_inr, 10) || 0,
+        budget_usd: parseInt(b.budget_usd, 10) || 0,
         deadline_days: parseInt(b.deadline_days || 7, 10) || 7,
         category: b.category || "general",
         status: "open",
@@ -52,7 +52,7 @@ router.post("/:id/apply", getCurrentUser, asyncH(async (req, res) => {
         user_name: req.user.name,
         user_picture: req.user.picture,
         message: req.body?.message || "",
-        quoted_price_inr: parseInt(req.body?.quoted_price_inr || 0, 10) || 0,
+        quoted_price_usd: parseInt(req.body?.quoted_price_usd || 0, 10) || 0,
         applied_at: iso(utcNow()),
     };
     await db.collection("custom_works").updateOne({ id: req.params.id }, { $push: { applicants: applicant } });
