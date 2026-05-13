@@ -88,18 +88,5 @@ webpackConfig.devServer = (devServerConfig) => {
   return devServerConfig;
 };
 
-// Attempt to load Emergent visual edits — silently skip if not available
-if (isDevServer) {
-  try {
-    const { withVisualEdits } = require("@emergentbase/visual-edits/craco");
-    webpackConfig = withVisualEdits(webpackConfig);
-  } catch (err) {
-    if (err.code === 'MODULE_NOT_FOUND' && err.message.includes('@emergentbase/visual-edits/craco')) {
-      // Expected — visual-edits not installed locally, that's fine
-    } else {
-      throw err;
-    }
-  }
-}
 
 module.exports = webpackConfig;

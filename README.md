@@ -119,4 +119,3 @@ promptlyi/
     └── .env               ← Frontend env vars
 ```
 
-> **Note:** `backend/server.py` is a legacy file from the original Emergent platform deployment. You can ignore it — run `node server.js` directly.
