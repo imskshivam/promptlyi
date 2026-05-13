@@ -8,6 +8,7 @@ import {
     ListChecks, ShoppingCart,
 } from "lucide-react";
 import { toast } from "sonner";
+import { logCustomEvent } from "../lib/firebase";
 
 export default function PromptDetail() {
     const { id } = useParams();
@@ -36,6 +37,7 @@ export default function PromptDetail() {
                 if (r.data.content) setP(prev => ({ ...prev, content: r.data.content }));
                 return;
             }
+            logCustomEvent("unlock_prompt", { prompt_id: id, is_free: isFree, price_credits: priceCredits });
             toast.success("🎉 Unlocked! Prompt content is now visible.");
             await refresh(); // update credit balance in navbar
             if (r.data.content) setP(prev => ({ ...prev, content: r.data.content }));

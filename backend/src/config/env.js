@@ -11,6 +11,7 @@ module.exports = {
     DODO_ENVIRONMENT: (process.env.DODO_ENVIRONMENT || "test_mode").trim(),
     DODO_WEBHOOK_SECRET: (process.env.DODO_WEBHOOK_SECRET || "").trim(),
     FRONTEND_ORIGIN: (process.env.FRONTEND_ORIGIN || "http://localhost:3000").trim(),
+    GOOGLE_CLIENT_ID: (process.env.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com").trim(),
 
     DODO_PRODUCTS: {
         sub_basic: (process.env.DODO_PROD_SUB_BASIC || "").trim(),

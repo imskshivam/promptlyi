@@ -7,52 +7,56 @@ const { getDb } = require("../config/db");
 const { iso, utcNow } = require("../utils/time");
 const { getCurrentUser } = require("../middleware/auth");
 const { asyncH, HttpError } = require("../middleware/errorHandler");
-const { JWT_SECRET } = require("../config/env");
+const { OAuth2Client } = require("google-auth-library");
+const { JWT_SECRET, GOOGLE_CLIENT_ID } = require("../config/env");
+
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const router = express.Router();
 
-// ─── Register ─────────────────────────────────────────────────────────────────
-router.post("/register", asyncH(async (req, res) => {
+// ─── Google OAuth Login / Register ──────────────────────────────────────────────
+router.post("/google", asyncH(async (req, res) => {
     const db = getDb();
-    const { email, password, name } = req.body || {};
-    if (!email || !password) throw new HttpError(400, "email and password are required");
-    if (password.length < 6) throw new HttpError(400, "password must be at least 6 characters");
+    const { credential } = req.body || {};
+    if (!credential) throw new HttpError(400, "Google credential is required");
 
-    const existing = await db.collection("users").findOne({ email }, { projection: { _id: 0 } });
-    if (existing) throw new HttpError(409, "An account with that email already exists");
+    // Verify token
+    const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) throw new HttpError(401, "Invalid Google token");
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = {
-        id: uuidv4(),
-        email,
-        name: name || email.split("@")[0],
-        picture: null,
-        role: null,
-        credits: 50,
-        subscription_plan: null,
-        bio: "",
-        created_at: iso(utcNow()),
-    };
-    await db.collection("users").insertOne({ ...user, password_hash: passwordHash });
+    const email = payload.email;
+    const googleId = payload.sub;
+    const name = payload.name;
+    const picture = payload.picture;
 
-    const token = _issueToken(user.id);
-    _setCookie(res, token);
-    res.status(201).json({ user, token });
-}));
+    let user = await db.collection("users").findOne({ email }, { projection: { _id: 0, password_hash: 0 } });
 
-// ─── Login ────────────────────────────────────────────────────────────────────
-router.post("/login", asyncH(async (req, res) => {
-    const db = getDb();
-    const { email, password } = req.body || {};
-    if (!email || !password) throw new HttpError(400, "email and password are required");
+    if (!user) {
+        // Create new user
+        user = {
+            id: uuidv4(),
+            email,
+            name: name || email.split("@")[0],
+            picture: picture || null,
+            google_id: googleId,
+            role: null,
+            credits: 50,
+            subscription_plan: null,
+            bio: "",
+            created_at: iso(utcNow()),
+        };
+        await db.collection("users").insertOne({ ...user });
+    } else if (!user.google_id || user.picture !== picture) {
+        // Update existing user with Google ID & picture if missing/changed
+        await db.collection("users").updateOne({ email }, { $set: { google_id: googleId, picture: picture || user.picture } });
+        user.google_id = googleId;
+        user.picture = picture || user.picture;
+    }
 
-    const record = await db.collection("users").findOne({ email });
-    if (!record || !record.password_hash) throw new HttpError(401, "Invalid email or password");
-
-    const valid = await bcrypt.compare(password, record.password_hash);
-    if (!valid) throw new HttpError(401, "Invalid email or password");
-
-    const { _id, password_hash, ...user } = record;
     const token = _issueToken(user.id);
     _setCookie(res, token);
     res.json({ user, token });

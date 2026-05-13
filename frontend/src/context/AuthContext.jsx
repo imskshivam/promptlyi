@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { http } from "../lib/api";
+import { logCustomEvent } from "../lib/firebase";
 
 const AuthCtx = createContext(null);
 
@@ -25,15 +26,10 @@ export const AuthProvider = ({ children }) => {
         window.location.href = "/login";
     };
 
-    const loginWithCredentials = async (email, password) => {
-        const r = await http.post("/auth/login", { email, password });
+    const loginWithGoogle = async (credential) => {
+        const r = await http.post("/auth/google", { credential });
         setUser(r.data.user);
-        return r.data.user;
-    };
-
-    const register = async (email, password, name) => {
-        const r = await http.post("/auth/register", { email, password, name });
-        setUser(r.data.user);
+        logCustomEvent("login", { method: "Google" });
         return r.data.user;
     };
 
@@ -50,7 +46,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthCtx.Provider value={{ user, loading, login, loginWithCredentials, register, logout, selectRole, refresh, setUser }}>
+        <AuthCtx.Provider value={{ user, loading, login, loginWithGoogle, logout, selectRole, refresh, setUser }}>
             {children}
         </AuthCtx.Provider>
     );
