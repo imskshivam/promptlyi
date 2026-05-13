@@ -45,7 +45,8 @@ export default function Marketplace() {
         http.get("/creators/trending?limit=6").then((r) => setTrending(r.data || [])).catch(() => {});
     }, []);
 
-    useEffect(() => { fetchPrompts(cat, q); /* eslint-disable-next-line */ }, [cat]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { fetchPrompts(cat, q); }, [cat]);
 
     const handleSearch = (e) => {
         e.preventDefault();

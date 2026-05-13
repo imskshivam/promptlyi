@@ -52,8 +52,10 @@ export default function CreatorDashboard() {
         setRevenue(r.data);
     };
 
-    useEffect(() => { fetchAll(); fetchRevenue(interval); /* eslint-disable-next-line */ }, []);
-    useEffect(() => { fetchRevenue(interval); /* eslint-disable-next-line */ }, [interval]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { fetchAll(); fetchRevenue(interval); }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { fetchRevenue(interval); }, [interval]);
 
     // Live credit estimate
     useEffect(() => {

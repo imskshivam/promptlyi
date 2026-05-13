@@ -25,7 +25,8 @@ export default function PromptDetail() {
             setP(r.data);
         } catch { toast.error("Prompt not found"); nav("/marketplace"); }
     };
-    useEffect(() => { loadPrompt(); /* eslint-disable-next-line */ }, [id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { loadPrompt(); }, [id]);
 
     const purchase = async () => {
         if (!user) { login(); return; }
