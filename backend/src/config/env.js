@@ -3,14 +3,25 @@
 module.exports = {
     MONGO_URL: process.env.MONGO_URL || "mongodb://127.0.0.1:27017",
     DB_NAME: process.env.DB_NAME || "promptly",
-    CORS_ORIGINS: (process.env.CORS_ORIGINS || "http://localhost:3000").split(","),
+    
+    // Automatically allow localhost and promptlyi.com, plus anything from .env
+    CORS_ORIGINS: [...new Set([
+        "http://localhost:3000",
+        "http://promptlyi.com",
+        "https://promptlyi.com",
+        "https://www.promptlyi.com",
+        "http://www.promptlyi.com",
+        ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",") : [])
+    ])],
 
     JWT_SECRET: process.env.JWT_SECRET || "dev_secret_change_in_production",
 
     DODO_API_KEY: (process.env.DODO_PAYMENTS_API_KEY || "").trim(),
     DODO_ENVIRONMENT: (process.env.DODO_ENVIRONMENT || "test_mode").trim(),
     DODO_WEBHOOK_SECRET: (process.env.DODO_WEBHOOK_SECRET || "").trim(),
-    FRONTEND_ORIGIN: (process.env.FRONTEND_ORIGIN || "http://localhost:3000").trim(),
+    
+    // Fallback to promptlyi.com if frontend origin isn't explicitly set
+    FRONTEND_ORIGIN: (process.env.FRONTEND_ORIGIN || "http://promptlyi.com").trim(),
     GOOGLE_CLIENT_ID: (process.env.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com").trim(),
 
     DODO_PRODUCTS: {
