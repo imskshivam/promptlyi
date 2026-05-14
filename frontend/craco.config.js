@@ -62,9 +62,9 @@ webpackConfig.devServer = (devServerConfig) => {
   // Proxy /api requests to local backend (avoids CORS in development)
   devServerConfig.proxy = {
     '/api': {
-      target: process.env.REACT_APP_BACKEND_URL || 'http://localhost:4000',
+      target: process.env.REACT_APP_BACKEND_URL || 'https://backend.promtlyi.com',
       changeOrigin: true,
-      secure: false,
+      secure: true,
     },
   };
 
