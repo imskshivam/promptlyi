@@ -1,15 +1,12 @@
 [build]
-  # Tell Netlify that the frontend project is inside the "frontend" folder
-  base = "frontend"
-  publish = "frontend/build"
+  base    = "frontend"
+  publish = "build"          # relative to base
   command = "npm run build"
 
 [build.environment]
-  # Fixes the Create React App issue where ESLint warnings crash the build
   CI = "false"
 
 [[redirects]]
-  # This ensures React Router works properly when users refresh the page
-  from = "/*"
-  to = "/index.html"
+  from   = "/*"
+  to     = "/index.html"
   status = 200
