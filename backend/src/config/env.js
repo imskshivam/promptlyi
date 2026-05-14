@@ -7,6 +7,7 @@ module.exports = {
     // Automatically allow localhost and promptlyi.com, plus anything from .env
     CORS_ORIGINS: [...new Set([
         "http://localhost:3000",
+        "http://localhost:4000",
         "http://promptlyi.com",
         "https://promptlyi.com",
         "https://www.promptlyi.com",
