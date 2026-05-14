@@ -30,8 +30,8 @@ export default function Footer() {
                 <div>
                     <div className="font-heading font-bold uppercase text-xs tracking-wider mb-3 text-[#FFD600]">Legal</div>
                     <ul className="space-y-2 text-sm text-white/70">
-                        <li>Terms</li>
-                        <li>Privacy</li>
+                        <li><Link to="/terms">Terms</Link></li>
+                        <li><Link to="/privacy">Privacy</Link></li>
                         <li>Cookies</li>
                     </ul>
                 </div>

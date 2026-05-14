@@ -19,6 +19,8 @@ import Login from "./pages/Login";
 import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
 
 function Layout({ children }) {
     return (
@@ -46,6 +48,8 @@ function App() {
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/onboarding" element={<Layout><Onboarding /></Layout>} />
                     <Route path="/payments/success" element={<Layout><PaymentSuccess /></Layout>} />
+                    <Route path="/privacy" element={<Layout><PrivacyPolicy /></Layout>} />
+                    <Route path="/terms" element={<Layout><Terms /></Layout>} />
                     <Route
                         path="/creator"
                         element={<ProtectedRoute role="business"><Layout><CreatorDashboard /></Layout></ProtectedRoute>}
