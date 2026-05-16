@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /creator
+Disallow: /onboarding
+Disallow: /payments/success
+Disallow: /auth/callback
+
+Sitemap: https://promptlyi.com/sitemap.xml
