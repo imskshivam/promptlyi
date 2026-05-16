@@ -280,11 +280,7 @@ export default function PromptDetail() {
                                         <AlertCircle className="w-3 h-3" /> Please sign in to purchase.
                                     </p>
                                 )}
-                                {!isFree && !user && (
-                                    <p className="text-xs text-[#66635D] text-center">
-                                        New users get <span className="font-bold">50 free credits</span> on signup.
-                                    </p>
-                                )}
+
                             </div>
                         )}
                     </div>

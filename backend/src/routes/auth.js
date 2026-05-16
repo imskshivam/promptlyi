@@ -45,7 +45,7 @@ router.post("/google", asyncH(async (req, res) => {
             picture: picture || null,
             google_id: googleId,
             role: null,
-            credits: 50,
+            credits: 0,
             subscription_plan: null,
             bio: "",
             created_at: iso(utcNow()),
