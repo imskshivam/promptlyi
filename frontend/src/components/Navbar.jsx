@@ -29,7 +29,7 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
                 <Link to="/" className="flex items-center gap-2" data-testid="logo-link">
                     <div className="w-8 h-8 bg-[#FF4F00] border-2 border-[#1A1A1A] flex items-center justify-center text-white font-black">P</div>
-                    <span className="font-heading font-black text-xl tracking-tight">Promptly</span>
+                    <span className="font-heading font-black text-xl tracking-tight">Promptlyi</span>
                 </Link>
 
                 <nav className="hidden md:flex items-center gap-8">

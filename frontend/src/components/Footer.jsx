@@ -8,7 +8,7 @@ export default function Footer() {
                 <div>
                     <div className="flex items-center gap-2 mb-4">
                         <div className="w-8 h-8 bg-[#FF4F00] border-2 border-white flex items-center justify-center font-black">P</div>
-                        <span className="font-heading font-black text-xl">Promptly</span>
+                        <span className="font-heading font-black text-xl">Promptlyi</span>
                     </div>
                     <p className="text-sm text-white/60 max-w-xs">The creator economy for prompt engineers. Earn, share, create.</p>
                 </div>
@@ -37,7 +37,7 @@ export default function Footer() {
                 </div>
             </div>
             <div className="border-t border-white/10 py-6 text-center text-xs text-white/50">
-                © {new Date().getFullYear()} Promptly. Designed for creators, built to be earned.
+                © {new Date().getFullYear()} Promptlyi. Designed for creators, built to be earned.
             </div>
         </footer>
     );

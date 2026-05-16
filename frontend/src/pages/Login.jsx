@@ -39,7 +39,7 @@ export default function Login() {
                         Authentication
                     </div>
                     <h1 className="font-heading text-4xl md:text-5xl font-black tracking-tighter">
-                        Sign in to Promptly
+                        Sign in to Promptlyi
                     </h1>
                     <p className="mt-3 text-[#66635D] text-sm">
                         Use your Google account to quickly and securely log in.

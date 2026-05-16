@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
                     
                     <section>
                         <h2 className="font-heading font-bold text-2xl mb-3 text-[#1A1A1A]">1. Introduction</h2>
-                        <p>At Promptly, we take your privacy and data security seriously. This Privacy Policy outlines how we collect, use, store, and protect your personal information when you use our website and services.</p>
+                        <p>At Promptlyi, we take your privacy and data security seriously. This Privacy Policy outlines how we collect, use, store, and protect your personal information when you use our website and services.</p>
                     </section>
 
                     <section>
@@ -31,7 +31,7 @@ export default function PrivacyPolicy() {
                         <h2 className="font-heading font-bold text-2xl mb-3 text-[#1A1A1A]">3. How We Use Your Information</h2>
                         <p>We use the collected information for the following purposes:</p>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li>To provide, maintain, and improve the Promptly platform.</li>
+                            <li>To provide, maintain, and improve the Promptlyi platform.</li>
                             <li>To process your transactions and manage your account balance.</li>
                             <li>To facilitate payouts to Creators.</li>
                             <li>To communicate with you regarding security updates, account alerts, and platform changes.</li>
@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
                         <p>We do not sell your personal data to third parties. We may share your information only in the following circumstances:</p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li><strong>Service Providers:</strong> With trusted third-party services that assist in operating our platform (e.g., MongoDB Atlas for secure database hosting, Dodo Payments for billing, Firebase for analytics).</li>
-                            <li><strong>Legal Compliance:</strong> If required by law, subpoena, or other legal processes, or to protect the rights, property, or safety of Promptly, our users, or others.</li>
+                            <li><strong>Legal Compliance:</strong> If required by law, subpoena, or other legal processes, or to protect the rights, property, or safety of Promptlyi, our users, or others.</li>
                         </ul>
                     </section>
 
