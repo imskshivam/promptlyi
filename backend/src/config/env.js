@@ -24,6 +24,8 @@ module.exports = {
     // Fallback to promptlyi.com if frontend origin isn't explicitly set
     FRONTEND_ORIGIN: (process.env.FRONTEND_ORIGIN || "http://promptlyi.com").trim(),
     GOOGLE_CLIENT_ID: (process.env.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com").trim(),
+    
+    RESEND_API_KEY: (process.env.RESEND_API_KEY || "").trim(),
 
     DODO_PRODUCTS: {
         sub_basic: (process.env.DODO_PROD_SUB_BASIC || "").trim(),

@@ -9,6 +9,7 @@ const { getCurrentUser } = require("../middleware/auth");
 const { asyncH, HttpError } = require("../middleware/errorHandler");
 const { OAuth2Client } = require("google-auth-library");
 const { JWT_SECRET, GOOGLE_CLIENT_ID } = require("../config/env");
+const { sendWelcomeEmail } = require("../services/emailService");
 
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
@@ -50,6 +51,9 @@ router.post("/google", asyncH(async (req, res) => {
             created_at: iso(utcNow()),
         };
         await db.collection("users").insertOne({ ...user });
+        
+        // Send onboarding welcome email asynchronously
+        sendWelcomeEmail(user.email, user.name);
     } else if (!user.google_id || user.picture !== picture) {
         // Update existing user with Google ID & picture if missing/changed
         await db.collection("users").updateOne({ email }, { $set: { google_id: googleId, picture: picture || user.picture } });
