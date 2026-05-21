@@ -90,8 +90,8 @@ export default function UserDashboard() {
                         <div className="py-16 text-center">
                             <div className="text-4xl mb-3">🛍️</div>
                             <div className="font-heading text-2xl font-bold">No prompts yet.</div>
-                            <p className="text-[#66635D] mt-2">Browse the marketplace and unlock your first prompt.</p>
-                            <Link to="/marketplace" className="btn-vermilion inline-flex mt-4">Browse Marketplace</Link>
+                            <p className="text-[#66635D] mt-2">Browse the catalog and unlock your first prompt.</p>
+                            <Link to="/marketplace" className="btn-vermilion inline-flex mt-4">Browse Prompts</Link>
                         </div>
                     ) : purchases.map((pu) => (
                         <Link

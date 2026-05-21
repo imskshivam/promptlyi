@@ -33,7 +33,7 @@ export default function Navbar() {
                 </Link>
 
                 <nav className="hidden md:flex items-center gap-8">
-                    <NavItem to="/marketplace">Marketplace</NavItem>
+                    <NavItem to="/marketplace">Prompts</NavItem>
                     <NavItem to="/custom-works">Custom Work</NavItem>
                     <NavItem to="/pricing">Pricing</NavItem>
                     {user && <NavItem to={dashPath}>Dashboard</NavItem>}
@@ -68,7 +68,7 @@ export default function Navbar() {
             {open && (
                 <div className="md:hidden border-t-2 border-[#1A1A1A] bg-[#F7F5F0]">
                     <div className="px-6 py-4 flex flex-col gap-4">
-                        <NavItem to="/marketplace">Marketplace</NavItem>
+                        <NavItem to="/marketplace">Prompts</NavItem>
                         <NavItem to="/custom-works">Custom Work</NavItem>
                         <NavItem to="/pricing">Pricing</NavItem>
                         {user ? (

@@ -13,7 +13,7 @@ export default function Footer() {
                     <p className="text-sm text-white/60 max-w-xs">The creator economy for prompt engineers. Earn, share, create.</p>
                 </div>
                 <div>
-                    <div className="font-heading font-bold uppercase text-xs tracking-wider mb-3 text-[#FFD600]">Marketplace</div>
+                    <div className="font-heading font-bold uppercase text-xs tracking-wider mb-3 text-[#FFD600]">Prompts</div>
                     <ul className="space-y-2 text-sm text-white/70">
                         <li><Link to="/marketplace">Browse</Link></li>
                         <li><Link to="/custom-works">Custom Work</Link></li>

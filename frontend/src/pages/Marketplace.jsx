@@ -65,8 +65,8 @@ export default function Marketplace() {
             {/* ========= Header ========= */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
                 <div>
-                    <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF4F00] mb-2">Marketplace</div>
-                    <h1 className="font-heading text-5xl md:text-6xl font-black tracking-tighter">Discover prompts.</h1>
+                    <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF4F00] mb-2">Prompts</div>
+                    <h1 className="font-heading text-5xl md:text-7xl font-black tracking-tighter">Discover prompts.</h1>
                     <p className="text-[#66635D] mt-3 max-w-md">
                         Handcrafted by prompt experts. Browse free — unlock with credits.
                     </p>
