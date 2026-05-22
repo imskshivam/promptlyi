@@ -5,7 +5,7 @@ const { getDb } = require("../config/db");
 const { getCurrentUser } = require("../middleware/auth");
 const { asyncH, HttpError } = require("../middleware/errorHandler");
 const { iso, utcNow } = require("../utils/time");
-const { paymentSucceeded, subscriptionSucceeded } = require("../services/dodoService");
+const { paymentSucceeded, subscriptionSucceeded } = require("../services/polarService");
 const { CREDIT_PACKS } = require("./credits");
 const { PLANS } = require("./subscriptions");
 
@@ -17,7 +17,7 @@ router.post("/confirm", getCurrentUser, asyncH(async (req, res) => {
     const pid = payment_id || subscription_id;
     if (!pid) throw new HttpError(400, "payment_id or subscription_id required");
 
-    const existing = await db.collection("dodo_processed").findOne({ payment_id: pid }, { projection: { _id: 0 } });
+    const existing = await db.collection("polar_processed").findOne({ payment_id: pid }, { projection: { _id: 0 } });
     if (existing) return res.json({ ok: true, already_processed: true, kind: existing.kind });
 
     let info = await paymentSucceeded(pid);
@@ -71,7 +71,7 @@ router.post("/confirm", getCurrentUser, asyncH(async (req, res) => {
         }
     }
 
-    await db.collection("dodo_processed").insertOne({
+    await db.collection("polar_processed").insertOne({
         payment_id: pid, user_id: req.user.id, kind,
         metadata: md, created_at: iso(utcNow()),
     });

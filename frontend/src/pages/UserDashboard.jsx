@@ -38,7 +38,7 @@ export default function UserDashboard() {
             {/* Header */}
             <div className="flex items-end justify-between gap-6 mb-8 flex-wrap">
                 <div>
-                    <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF4F00] mb-2">Client Dashboard</div>
+                    <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF4F00] mb-2">User Dashboard</div>
                     <h1 className="font-heading text-5xl md:text-6xl font-black tracking-tighter">Hi {user?.name?.split(" ")[0]}.</h1>
                 </div>
                 <div className="bg-[#FFD600] border-2 border-[#1A1A1A] hard-shadow px-6 py-4">

@@ -93,7 +93,7 @@ export default function Marketplace() {
             </div>
 
             {/* ========= Trending Creators ========= */}
-            {trending.length > 0 && (
+            {/* {trending.length > 0 && (
                 <section className="mb-12">
                     <div className="flex items-end justify-between mb-5 flex-wrap gap-2">
                         <div className="flex items-center gap-2">
@@ -129,7 +129,7 @@ export default function Marketplace() {
                         ))}
                     </div>
                 </section>
-            )}
+            )} */}
 
             {/* ========= Category Filters ========= */}
             <div className="mb-8">

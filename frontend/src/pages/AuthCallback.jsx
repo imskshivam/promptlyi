@@ -13,13 +13,16 @@ export default function AuthCallback() {
         if (loading) return;
         if (!user) {
             nav("/login", { replace: true });
-        } else if (!user.role) {
-            nav("/onboarding", { replace: true });
-        } else if (user.role === "business") {
-            nav("/creator", { replace: true });
         } else {
             nav("/dashboard", { replace: true });
         }
+        // else if (!user.role) {
+        //     nav("/onboarding", { replace: true });
+        // } else if (user.role === "business") {
+        //     nav("/creator", { replace: true });
+        // } else {
+        //     nav("/dashboard", { replace: true });
+        // }
     }, [user, loading, nav]);
 
     return (

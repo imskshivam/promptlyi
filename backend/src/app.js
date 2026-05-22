@@ -4,7 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const env = require("./config/env");
-require("./config/dodo"); // initialise dodo client at boot
+require("./config/polar"); // initialise polar client at boot
 
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 

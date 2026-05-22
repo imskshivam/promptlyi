@@ -3,7 +3,7 @@ const express = require("express");
 const { getDb } = require("../config/db");
 const { getCurrentUser } = require("../middleware/auth");
 const { asyncH, HttpError } = require("../middleware/errorHandler");
-const { createCheckout, DODO_PRODUCTS } = require("../services/dodoService");
+const { createCheckout, POLAR_PRODUCTS } = require("../services/polarService");
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.post("/subscribe", getCurrentUser, asyncH(async (req, res) => {
     const plan = PLANS[req.body?.plan_id];
     if (!plan) throw new HttpError(404, "Plan not found");
     const sess = await createCheckout({
-        productId: DODO_PRODUCTS[plan.product_key],
+        productId: POLAR_PRODUCTS[plan.product_key],
         customer: { email: req.user.email, name: req.user.name },
         returnPath: "/payments/success",
         metadata: {

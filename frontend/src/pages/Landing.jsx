@@ -31,12 +31,12 @@ export default function Landing() {
                             <span className="text-[#FF4F00]">AI</span> <span className="underline decoration-[6px] decoration-[#0047FF] underline-offset-8">prompts.</span>
                         </h1>
                         <p className="mt-8 text-lg md:text-xl max-w-xl text-[#1A1A1A]/75">
-                            We curate and sell the best AI prompts. A premium platform built for you to find the perfect prompt for any task and unlock incredible generations.
+                            We curate the best AI prompts. A premium platform built for you to find the perfect prompt for any task and unlock incredible generations.
                         </p>
                         <div className="mt-10 flex flex-wrap gap-4">
-                            <button onClick={login} className="btn-vermilion text-base hard-shadow" data-testid="hero-start-earning">
+                            {/* <button onClick={login} className="btn-vermilion text-base hard-shadow" data-testid="hero-start-earning">
                                 Start Earning <ArrowUpRight className="w-5 h-5" />
-                            </button>
+                            </button> */}
                             <Link to="/marketplace" className="btn-outline text-base" data-testid="hero-browse-btn">
                                 Browse Prompts
                             </Link>
@@ -190,10 +190,10 @@ export default function Landing() {
             <section className="max-w-7xl mx-auto px-6 py-24 text-center">
                 <TrendingUp className="w-10 h-10 mx-auto text-[#FF4F00]" />
                 <h2 className="font-heading text-5xl md:text-7xl font-black tracking-tighter mt-6 max-w-3xl mx-auto">Your perfect AI generation is one prompt away.</h2>
-                <p className="mt-6 text-[#66635D] max-w-xl mx-auto text-lg">Find your first premium prompt today. No credit card required to sign up.</p>
+                <p className="mt-6 text-[#66635D] max-w-xl mx-auto text-lg">Find your first premium prompt today.</p>
                 <div className="mt-10 flex flex-wrap gap-4 justify-center">
                     {user ? (
-                        <Link to={user.role === "business" ? "/creator" : "/dashboard"} className="btn-vermilion hard-shadow" data-testid="final-cta-dashboard">Go to Dashboard →</Link>
+                        <Link to="/dashboard" className="btn-vermilion hard-shadow" data-testid="final-cta-dashboard">Go to Dashboard →</Link>
                     ) : (
                         <button onClick={login} className="btn-vermilion hard-shadow" data-testid="final-cta-signup">Sign up now →</button>
                     )}

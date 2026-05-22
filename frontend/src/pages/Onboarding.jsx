@@ -42,7 +42,7 @@ export default function Onboarding() {
 
             <div className="grid md:grid-cols-2 gap-6">
                 {/* Prompt User Card */}
-                <button
+                {/* <button
                     disabled={loading}
                     onClick={() => pick("prompt_user")}
                     className="text-left bg-white border-2 border-[#1A1A1A] hard-shadow p-8 hover:bg-[#FFD600] transition-colors group"
@@ -62,9 +62,9 @@ export default function Onboarding() {
                     <div className="mt-6 flex items-center gap-2 text-sm font-bold uppercase">
                         Start selling <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </div>
-                </button>
+                </button> */}
 
-                {/* Client Card */}
+                {/* User Card */}
                 <button
                     disabled={loading}
                     onClick={() => pick("client")}
@@ -72,7 +72,7 @@ export default function Onboarding() {
                     data-testid="role-client"
                 >
                     <ShoppingBag className="w-10 h-10 text-[#0047FF]" />
-                    <div className="font-heading text-3xl font-black mt-4">I'm a Client</div>
+                    <div className="font-heading text-3xl font-black mt-4">I'm a User</div>
                     <p className="mt-2 text-[#66635D] text-sm">Discover & unlock premium AI prompts crafted by experts.</p>
                     <ul className="mt-5 space-y-2">
                         {CLIENT_PERKS.map((p) => (

@@ -22,7 +22,7 @@ export default function Navbar() {
     const [open, setOpen] = useState(false);
     const nav = useNavigate();
 
-    const dashPath = user?.role === "business" ? "/creator" : "/dashboard";
+    const dashPath = "/dashboard";
 
     return (
         <header className="sticky top-0 z-40 bg-[#F7F5F0]/90 backdrop-blur border-b-2 border-[#1A1A1A]">
@@ -55,7 +55,7 @@ export default function Navbar() {
                     ) : (
                         <>
                             <button onClick={login} className="btn-outline !py-2 !px-4 text-sm" data-testid="nav-login-btn">Log In</button>
-                            <button onClick={login} className="btn-vermilion !py-2 !px-4 text-sm" data-testid="nav-signup-btn">Start Earning</button>
+                            {/* <button onClick={login} className="btn-vermilion !py-2 !px-4 text-sm" data-testid="nav-signup-btn">Start Earning</button> */}
                         </>
                     )}
                 </div>
@@ -77,7 +77,7 @@ export default function Navbar() {
                                 <button onClick={logout} className="btn-outline justify-start" data-testid="mobile-logout-btn">Log out</button>
                             </>
                         ) : (
-                            <button onClick={login} className="btn-vermilion" data-testid="mobile-signup-btn">Start Earning</button>
+                            <button onClick={login} className="btn-outline" data-testid="mobile-signup-btn">Log In</button>
                         )}
                     </div>
                 </div>

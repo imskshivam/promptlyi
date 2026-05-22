@@ -10,7 +10,7 @@ export default function Footer() {
                         <div className="w-8 h-8 bg-[#FF4F00] border-2 border-white flex items-center justify-center font-black">P</div>
                         <span className="font-heading font-black text-xl">Promptlyi</span>
                     </div>
-                    <p className="text-sm text-white/60 max-w-xs">The creator economy for prompt engineers. Earn, share, create.</p>
+                    <p className="text-sm text-white/60 max-w-xs">The best AI platform for prompt engineers. Discover and create.</p>
                 </div>
                 <div>
                     <div className="font-heading font-bold uppercase text-xs tracking-wider mb-3 text-[#FFD600]">Prompts</div>
@@ -20,13 +20,13 @@ export default function Footer() {
                         <li><Link to="/pricing">Pricing</Link></li>
                     </ul>
                 </div>
-                <div>
+                {/* <div className="hidden">
                     <div className="font-heading font-bold uppercase text-xs tracking-wider mb-3 text-[#FFD600]">Creators</div>
                     <ul className="space-y-2 text-sm text-white/70">
                         <li><Link to="/creator">Creator Dashboard</Link></li>
                         <li><Link to="/pricing">Subscriptions</Link></li>
                     </ul>
-                </div>
+                </div> */}
                 <div>
                     <div className="font-heading font-bold uppercase text-xs tracking-wider mb-3 text-[#FFD600]">Legal</div>
                     <ul className="space-y-2 text-sm text-white/70">
@@ -37,7 +37,7 @@ export default function Footer() {
                 </div>
             </div>
             <div className="border-t border-white/10 py-6 text-center text-xs text-white/50">
-                © {new Date().getFullYear()} Promptlyi. Designed for creators, built to be earned.
+                © {new Date().getFullYear()} Promptlyi.
             </div>
         </footer>
     );

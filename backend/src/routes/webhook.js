@@ -1,87 +1,25 @@
 "use strict";
 /**
- * Dodo Payments Webhook Handler
- * ─────────────────────────────
- * Standard Webhooks spec (https://www.standardwebhooks.com/)
- *
- * Dodo sends three headers:
- *   webhook-id         – unique event ID (use for idempotency)
- *   webhook-timestamp  – Unix seconds
- *   webhook-signature  – "v1,<base64-hmac-sha256>"  (possibly multiple, comma-sep)
- *
- * Signed payload = `${webhook-id}.${webhook-timestamp}.${rawBody}`
- * Secret is base64-encoded; decode before use.
+ * Polar Payments Webhook Handler
  */
 
 const express = require("express");
-const crypto = require("crypto");
 const { v4: uuidv4 } = require("uuid");
 const { getDb } = require("../config/db");
 const { asyncH, HttpError } = require("../middleware/errorHandler");
 const { iso, utcNow } = require("../utils/time");
-const { DODO_WEBHOOK_SECRET } = require("../config/env");
+const { POLAR_WEBHOOK_SECRET } = require("../config/env");
+const { Webhooks } = require("@polar-sh/express");
 const { CREDIT_PACKS } = require("./credits");
 
 const router = express.Router();
 
-// ─── Signature verification ───────────────────────────────────────────────────
-function verifySignature(rawBody, headers) {
-    if (!DODO_WEBHOOK_SECRET) {
-        // If no secret configured, skip verification (dev mode only)
-        console.warn("[webhook] DODO_WEBHOOK_SECRET not set — skipping signature check");
-        return true;
-    }
-
-    const webhookId        = headers["webhook-id"];
-    const webhookTimestamp = headers["webhook-timestamp"];
-    const webhookSig       = headers["webhook-signature"];
-
-    if (!webhookId || !webhookTimestamp || !webhookSig) {
-        throw new HttpError(400, "Missing webhook signature headers");
-    }
-
-    // Reject events older than 5 minutes
-    const ts = parseInt(webhookTimestamp, 10);
-    const ageSec = Math.abs(Date.now() / 1000 - ts);
-    if (ageSec > 300) throw new HttpError(400, "Webhook timestamp too old");
-
-    // Decode secret (base64)
-    const secretBytes = Buffer.from(DODO_WEBHOOK_SECRET, "base64");
-
-    // Signed payload string
-    const signedPayload = `${webhookId}.${webhookTimestamp}.${rawBody}`;
-
-    // Compute expected HMAC-SHA256
-    const expectedHmac = crypto
-        .createHmac("sha256", secretBytes)
-        .update(signedPayload)
-        .digest("base64");
-
-    // Webhook-signature may have multiple sigs: "v1,abc123 v1,xyz456"
-    const sigs = webhookSig.split(" ");
-    const valid = sigs.some((s) => {
-        const [, sigBase64] = s.split(",");
-        if (!sigBase64) return false;
-        try {
-            return crypto.timingSafeEqual(
-                Buffer.from(sigBase64, "base64"),
-                Buffer.from(expectedHmac, "base64")
-            );
-        } catch {
-            return false;
-        }
-    });
-
-    if (!valid) throw new HttpError(401, "Webhook signature mismatch");
-    return true;
-}
-
-// ─── Event processors ─────────────────────────────────────────────────────────
-async function handlePaymentSucceeded(db, event, webhookId) {
-    const data = event.data || event;
-    const paymentId  = data.payment_id || data.id;
+async function handleCheckoutUpdated(db, data, webhookId) {
+    if (data.status !== "succeeded" && data.status !== "confirmed") return;
+    
+    const paymentId  = data.id;
     const metadata   = data.metadata   || {};
-    const amountTotal = data.total_amount || data.amount || 0;       // in paise/cents
+    const amountTotal = data.amount || data.total_amount || 0;
     const currency    = (data.currency || "USD").toUpperCase();
 
     // Save raw transaction
@@ -91,7 +29,7 @@ async function handlePaymentSucceeded(db, event, webhookId) {
             $setOnInsert: {
                 id: uuidv4(),
                 webhook_id: webhookId,
-                event_type: event.type || "payment.succeeded",
+                event_type: "checkout.updated",
                 payment_id: paymentId,
                 amount: amountTotal,
                 currency,
@@ -111,8 +49,7 @@ async function handlePaymentSucceeded(db, event, webhookId) {
         const userId = metadata.user_id;
         if (!pack || !userId) return;
 
-        // Idempotency: check dodo_processed
-        const already = await db.collection("dodo_processed").findOne({ payment_id: paymentId });
+        const already = await db.collection("polar_processed").findOne({ payment_id: paymentId });
         if (already) return;
 
         await db.collection("users").updateOne({ id: userId }, { $inc: { credits: pack.credits } });
@@ -126,7 +63,7 @@ async function handlePaymentSucceeded(db, event, webhookId) {
             payment_id: paymentId,
             created_at: iso(utcNow()),
         });
-        await db.collection("dodo_processed").insertOne({
+        await db.collection("polar_processed").insertOne({
             payment_id: paymentId,
             user_id: userId,
             kind,
@@ -142,7 +79,7 @@ async function handlePaymentSucceeded(db, event, webhookId) {
         const promptId = metadata.prompt_id;
         if (!userId || !promptId) return;
 
-        const already = await db.collection("dodo_processed").findOne({ payment_id: paymentId });
+        const already = await db.collection("polar_processed").findOne({ payment_id: paymentId });
         if (already) return;
 
         const prm = await db.collection("prompts").findOne({ id: promptId });
@@ -164,7 +101,7 @@ async function handlePaymentSucceeded(db, event, webhookId) {
             await db.collection("prompts").updateOne({ id: promptId }, { $inc: { downloads: 1 } });
         }
 
-        await db.collection("dodo_processed").insertOne({
+        await db.collection("polar_processed").insertOne({
             payment_id: paymentId,
             user_id: userId,
             kind,
@@ -175,9 +112,8 @@ async function handlePaymentSucceeded(db, event, webhookId) {
     }
 }
 
-async function handleSubscriptionActive(db, event, webhookId) {
-    const data           = event.data || event;
-    const subscriptionId = data.subscription_id || data.id;
+async function handleSubscriptionEvent(db, data, webhookId, eventType) {
+    const subscriptionId = data.id;
     const metadata       = data.metadata || {};
     const userId         = metadata.user_id;
     const planId         = metadata.plan_id;
@@ -188,9 +124,9 @@ async function handleSubscriptionActive(db, event, webhookId) {
             $setOnInsert: {
                 id: uuidv4(),
                 webhook_id: webhookId,
-                event_type: event.type || "subscription.active",
+                event_type: eventType,
                 payment_id: subscriptionId,
-                amount: data.total_amount || 0,
+                amount: data.amount || data.total_amount || 0,
                 currency: (data.currency || "USD").toUpperCase(),
                 status: "active",
                 metadata,
@@ -202,7 +138,7 @@ async function handleSubscriptionActive(db, event, webhookId) {
 
     if (!userId || !planId) return;
 
-    const already = await db.collection("dodo_processed").findOne({ payment_id: subscriptionId });
+    const already = await db.collection("polar_processed").findOne({ payment_id: subscriptionId });
     if (already) return;
 
     const expiresAt = new Date(Date.now() + 30 * 24 * 3600 * 1000);
@@ -219,7 +155,7 @@ async function handleSubscriptionActive(db, event, webhookId) {
         expires_at: iso(expiresAt),
         payment_id: subscriptionId,
     });
-    await db.collection("dodo_processed").insertOne({
+    await db.collection("polar_processed").insertOne({
         payment_id: subscriptionId,
         user_id: userId,
         kind: "subscription",
@@ -229,10 +165,9 @@ async function handleSubscriptionActive(db, event, webhookId) {
     console.log(`[webhook] subscription active: plan ${planId} → user ${userId}`);
 }
 
-async function handleRefund(db, event, webhookId) {
-    const data      = event.data || event;
-    const refundId  = data.refund_id || data.id;
-    const paymentId = data.payment_id;
+async function handleRefund(db, data, webhookId, eventType) {
+    const refundId  = data.id;
+    const paymentId = data.charge_id || data.order_id || data.payment_id;
     const metadata  = data.metadata || {};
 
     await db.collection("transactions").updateOne(
@@ -241,7 +176,7 @@ async function handleRefund(db, event, webhookId) {
             $setOnInsert: {
                 id: uuidv4(),
                 webhook_id: webhookId,
-                event_type: event.type || "refund.succeeded",
+                event_type: eventType,
                 payment_id: refundId,
                 original_payment_id: paymentId,
                 amount: -(data.amount || 0),
@@ -256,79 +191,51 @@ async function handleRefund(db, event, webhookId) {
     console.log(`[webhook] refund recorded: ${refundId} for payment ${paymentId}`);
 }
 
-// ─── Main webhook endpoint ─────────────────────────────────────────────────────
-// IMPORTANT: must use express.raw() to get raw body for HMAC — mounted in app.js
-router.post(
-    "/dodo",
-    express.raw({ type: "application/json" }),
-    asyncH(async (req, res) => {
-        const rawBody  = req.body.toString("utf8");
-        const webhookId = req.headers["webhook-id"] || uuidv4();
-
-        // 1. Verify signature
-        verifySignature(rawBody, req.headers);
-
-        let event;
-        try {
-            event = JSON.parse(rawBody);
-        } catch {
-            throw new HttpError(400, "Invalid JSON payload");
-        }
-
-        const eventType = event.type || "";
+// Polar Webhook endpoint mounted at /api/webhooks/polar
+router.post("/polar", express.json(), Webhooks({
+    webhookSecret: POLAR_WEBHOOK_SECRET || "fallback_secret",
+    onPayload: async (payload) => {
+        const webhookId = uuidv4();
         const db = getDb();
+        const eventType = payload.type;
+        const data = payload.data;
 
         console.log(`[webhook] received: ${eventType} (id=${webhookId})`);
 
-        // 2. Save raw webhook event for audit
         await db.collection("webhook_events").insertOne({
             id: uuidv4(),
             webhook_id: webhookId,
             event_type: eventType,
-            payload: event,
+            payload: payload,
             received_at: iso(utcNow()),
         });
 
-        // 3. Route by event type
         try {
-            if (eventType === "payment.succeeded") {
-                await handlePaymentSucceeded(db, event, webhookId);
-            } else if (["subscription.active", "subscription.renewed"].includes(eventType)) {
-                await handleSubscriptionActive(db, event, webhookId);
-            } else if (["refund.succeeded", "refund.created"].includes(eventType)) {
-                await handleRefund(db, event, webhookId);
-            } else if (eventType === "payment.failed") {
-                // Log only — no fulfillment
-                await db.collection("transactions").insertOne({
-                    id: uuidv4(),
-                    webhook_id: webhookId,
-                    event_type: eventType,
-                    payment_id: (event.data || event).payment_id || (event.data || event).id,
-                    amount: 0,
-                    status: "failed",
-                    metadata: (event.data || event).metadata || {},
-                    created_at: iso(utcNow()),
-                });
-                console.log(`[webhook] payment.failed logged`);
+            if (eventType === "checkout.updated") {
+                await handleCheckoutUpdated(db, data, webhookId);
+            } else if (["subscription.active", "subscription.created", "subscription.updated"].includes(eventType)) {
+                if (data.status === "active") {
+                    await handleSubscriptionEvent(db, data, webhookId, eventType);
+                }
+            } else if (["refund.created", "refund.updated"].includes(eventType)) {
+                if (data.status === "succeeded") {
+                    await handleRefund(db, data, webhookId, eventType);
+                }
             } else {
                 console.log(`[webhook] unhandled event type: ${eventType}`);
             }
         } catch (e) {
-            // Log the processing error but still return 200 to avoid Dodo retrying
             console.error(`[webhook] processing error for ${eventType}:`, e.message);
             await db.collection("webhook_events").updateOne(
                 { webhook_id: webhookId },
                 { $set: { processing_error: e.message } }
             );
         }
+    }
+}));
 
-        // Always return 200 quickly so Dodo doesn't retry
-        res.json({ ok: true, event_type: eventType });
-    })
-);
-
-// ─── Admin: list recent webhook events ────────────────────────────────────────
-router.get("/dodo/events", asyncH(async (req, res) => {
+// Admin: list recent webhook events
+router.get("/polar/events", asyncH(async (req, res) => {
     const db = getDb();
     const limit = Math.min(parseInt(req.query.limit || "50"), 200);
     const events = await db.collection("webhook_events")
@@ -339,7 +246,7 @@ router.get("/dodo/events", asyncH(async (req, res) => {
     res.json(events);
 }));
 
-// ─── Admin: list all transactions ─────────────────────────────────────────────
+// Admin: list all transactions
 router.get("/transactions", asyncH(async (req, res) => {
     const db = getDb();
     const limit = Math.min(parseInt(req.query.limit || "100"), 500);

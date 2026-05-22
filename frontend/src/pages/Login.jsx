@@ -15,10 +15,11 @@ export default function Login() {
         setLoading(true);
         try {
             const user = await loginWithGoogle(credentialResponse.credential);
-            // After login/register redirect by role
-            if (!user.role) nav("/onboarding", { replace: true });
-            else if (user.role === "prompt_user" || user.role === "business") nav("/creator", { replace: true });
-            else nav("/dashboard", { replace: true });
+            // After login/register redirect
+            // if (!user.role) nav("/onboarding", { replace: true });
+            // else if (user.role === "prompt_user" || user.role === "business") nav("/creator", { replace: true });
+            // else nav("/dashboard", { replace: true });
+            nav("/dashboard", { replace: true });
         } catch (e) {
             setError(e.response?.data?.detail || e.message || "Authentication failed. Please try again.");
         } finally {
