@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { GoogleLogin } from "@react-oauth/google";
-import { Loader2 } from "lucide-react";
+import { Loader2, Zap, Shield, Sparkles } from "lucide-react";
 
 export default function Login() {
     const { loginWithGoogle } = useAuth();
@@ -14,12 +14,14 @@ export default function Login() {
         setError(null);
         setLoading(true);
         try {
-            const user = await loginWithGoogle(credentialResponse.credential);
-            // After login/register redirect
-            // if (!user.role) nav("/onboarding", { replace: true });
-            // else if (user.role === "prompt_user" || user.role === "business") nav("/creator", { replace: true });
-            // else nav("/dashboard", { replace: true });
-            nav("/dashboard", { replace: true });
+            const returnedUser = await loginWithGoogle(credentialResponse.credential);
+            if (!returnedUser.role) {
+                nav("/onboarding", { replace: true });
+            } else if (returnedUser.role === "business" || returnedUser.role === "prompt_user") {
+                nav("/creator", { replace: true });
+            } else {
+                nav("/dashboard", { replace: true });
+            }
         } catch (e) {
             setError(e.response?.data?.detail || e.message || "Authentication failed. Please try again.");
         } finally {
@@ -27,33 +29,37 @@ export default function Login() {
         }
     };
 
-    const handleError = () => {
-        setError("Google sign-in was unsuccessful. Please try again.");
-    };
+    const handleError = () => setError("Google sign-in was unsuccessful. Please try again.");
 
     return (
-        <div className="min-h-[70vh] flex items-center justify-center px-6 py-16">
+        <div className="min-h-[80vh] flex items-center justify-center px-6 py-16 bg-white">
             <div className="w-full max-w-md">
-                {/* Header */}
-                <div className="text-center mb-10">
-                    <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF4F00] mb-3">
-                        Authentication
+                {/* Icon */}
+                <div className="flex justify-center mb-8">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-[0_8px_24px_rgba(249,115,22,0.35)]">
+                        <Zap className="w-8 h-8 text-white fill-white" />
                     </div>
-                    <h1 className="font-heading text-4xl md:text-5xl font-black tracking-tighter">
-                        Sign in to Promptlyi
+                </div>
+
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <div className="badge badge-orange mx-auto w-fit mb-3">
+                        <Sparkles className="w-3.5 h-3.5" /> Secure Authentication
+                    </div>
+                    <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-3">
+                        Sign in to <span className="gradient-text-dark">Promptlyi</span>
                     </h1>
-                    <p className="mt-3 text-[#66635D] text-sm">
-                        Use your Google account to quickly and securely log in.
+                    <p className="text-gray-500 text-sm leading-relaxed">
+                        Use your Google account to quickly and securely access thousands of premium AI prompts.
                     </p>
                 </div>
 
-                {/* Main Auth Card */}
-                <div className="bg-white border-2 border-[#1A1A1A] p-8 hard-shadow flex flex-col items-center">
-                    
+                {/* Card */}
+                <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_30px_rgba(0,0,0,0.07)] flex flex-col items-center">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center py-6">
-                            <Loader2 className="w-8 h-8 animate-spin text-[#FF4F00] mb-4" />
-                            <p className="text-sm font-bold text-[#1A1A1A]">Authenticating...</p>
+                        <div className="flex flex-col items-center justify-center py-8 gap-4">
+                            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                            <p className="text-sm font-semibold text-gray-700">Authenticating…</p>
                         </div>
                     ) : (
                         <div className="w-full flex justify-center py-4">
@@ -70,14 +76,27 @@ export default function Login() {
                     )}
 
                     {error && (
-                        <div className="mt-6 w-full bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 text-center rounded-md">
+                        <div className="mt-5 w-full bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 text-center rounded-xl">
                             {error}
                         </div>
                     )}
+
+                    {/* Trust badges */}
+                    <div className="mt-6 pt-5 border-t border-gray-50 w-full flex justify-center gap-6 text-xs text-gray-400">
+                        <span className="flex items-center gap-1.5">
+                            <Shield className="w-3.5 h-3.5 text-orange-400" /> Secure OAuth
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                            <Zap className="w-3.5 h-3.5 text-orange-400" /> Instant Access
+                        </span>
+                    </div>
                 </div>
 
-                <div className="mt-8 text-xs text-center text-[#66635D]">
-                    By continuing you agree to our Terms and Privacy Policy.
+                <div className="mt-6 text-xs text-center text-gray-400">
+                    By continuing you agree to our{" "}
+                    <a href="/terms" className="text-orange-500 hover:underline">Terms</a>
+                    {" "}and{" "}
+                    <a href="/privacy" className="text-orange-500 hover:underline">Privacy Policy</a>.
                 </div>
             </div>
         </div>

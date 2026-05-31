@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Sparkles, ShoppingBag, ArrowRight, CheckCircle2 } from "lucide-react";
-
-const PROMPT_USER_PERKS = [
-    "List unlimited prompts — completely free",
-    "Add example images & videos to showcase",
-    "Set your own credit price",
-    "Track sales & revenue in your dashboard",
-];
+import { Sparkles, ShoppingBag, ArrowRight, CheckCircle2, Zap } from "lucide-react";
 
 const CLIENT_PERKS = [
     "Browse 1000s of AI prompts",
@@ -22,70 +15,103 @@ export default function Onboarding() {
     const [loading, setLoading] = useState(false);
     const nav = useNavigate();
 
-    if (!user) return <div className="p-16 text-center">Please sign in.</div>;
+    if (!user) return (
+        <div className="min-h-screen bg-white flex items-center justify-center">
+            <p className="text-gray-500">Please sign in to continue.</p>
+        </div>
+    );
 
     const pick = async (role) => {
         setLoading(true);
         try {
             await selectRole(role);
-            nav(role === "prompt_user" ? "/creator" : "/dashboard", { replace: true });
+            nav(role === "business" ? "/creator" : "/dashboard", { replace: true });
         } finally { setLoading(false); }
     };
 
     return (
-        <div className="max-w-5xl mx-auto px-6 py-20">
-            <div className="text-center mb-12">
-                <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF4F00] mb-3">Welcome, {user.name} 👋</div>
-                <h1 className="font-heading text-5xl md:text-6xl font-black tracking-tighter">Choose your path.</h1>
-                <p className="mt-4 text-[#66635D]">You can always switch later from your settings.</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-                {/* Prompt User Card */}
-                {/* <button
-                    disabled={loading}
-                    onClick={() => pick("prompt_user")}
-                    className="text-left bg-white border-2 border-[#1A1A1A] hard-shadow p-8 hover:bg-[#FFD600] transition-colors group"
-                    data-testid="role-prompt-user"
-                >
-                    <Sparkles className="w-10 h-10 text-[#FF4F00]" />
-                    <div className="font-heading text-3xl font-black mt-4">I'm a Prompt User</div>
-                    <p className="mt-2 text-[#66635D] text-sm">Sell your AI prompts to clients. Free to list — no subscription needed.</p>
-                    <ul className="mt-5 space-y-2">
-                        {PROMPT_USER_PERKS.map((p) => (
-                            <li key={p} className="flex items-start gap-2 text-sm text-[#1A1A1A]">
-                                <CheckCircle2 className="w-4 h-4 text-[#FF4F00] mt-0.5 flex-shrink-0" />
-                                {p}
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="mt-6 flex items-center gap-2 text-sm font-bold uppercase">
-                        Start selling <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        <div className="min-h-screen bg-white flex items-center justify-center px-6 py-20">
+            <div className="max-w-2xl w-full">
+                {/* Header */}
+                <div className="text-center mb-12">
+                    <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-[0_8px_24px_rgba(249,115,22,0.35)] mb-6">
+                        <Zap className="w-8 h-8 text-white fill-white" />
                     </div>
-                </button> */}
-
-                {/* User Card */}
-                <button
-                    disabled={loading}
-                    onClick={() => pick("client")}
-                    className="text-left bg-white border-2 border-[#1A1A1A] hard-shadow p-8 hover:bg-[#FFD600] transition-colors group"
-                    data-testid="role-client"
-                >
-                    <ShoppingBag className="w-10 h-10 text-[#0047FF]" />
-                    <div className="font-heading text-3xl font-black mt-4">I'm a User</div>
-                    <p className="mt-2 text-[#66635D] text-sm">Discover & unlock premium AI prompts crafted by experts.</p>
-                    <ul className="mt-5 space-y-2">
-                        {CLIENT_PERKS.map((p) => (
-                            <li key={p} className="flex items-start gap-2 text-sm text-[#1A1A1A]">
-                                <CheckCircle2 className="w-4 h-4 text-[#0047FF] mt-0.5 flex-shrink-0" />
-                                {p}
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="mt-6 flex items-center gap-2 text-sm font-bold uppercase">
-                        Start browsing <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <div className="badge badge-orange mx-auto w-fit mb-3">
+                        Welcome, {user.name} 👋
                     </div>
-                </button>
+                    <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-3">
+                        Choose your <span className="gradient-text-dark">path.</span>
+                    </h1>
+                    <p className="text-gray-500">You can always switch later from your settings.</p>
+                </div>
+
+                {/* Cards */}
+                <div className="grid md:grid-cols-2 gap-6">
+                    <button
+                        disabled={loading}
+                        onClick={() => pick("normal")}
+                        className="w-full text-left bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:border-orange-200 hover:shadow-[0_8px_40px_rgba(249,115,22,0.12)] transition-all duration-300 group"
+                        data-testid="role-user"
+                    >
+                        <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                            <ShoppingBag className="w-7 h-7 text-orange-500" />
+                        </div>
+                        <div className="text-2xl font-black text-gray-900 mb-2">I'm a User</div>
+                        <p className="text-gray-500 text-sm mb-5">Discover & unlock premium AI prompts. Browse and manage your purchases.</p>
+                        <ul className="space-y-2 mb-6">
+                            <li className="flex items-start gap-2.5 text-sm text-gray-700">
+                                <CheckCircle2 className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                                Browse 1000s of AI prompts
+                            </li>
+                            <li className="flex items-start gap-2.5 text-sm text-gray-700">
+                                <CheckCircle2 className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                                Track your bought prompts
+                            </li>
+                            <li className="flex items-start gap-2.5 text-sm text-gray-700">
+                                <CheckCircle2 className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                                Keep a full transaction history
+                            </li>
+                        </ul>
+                        <div className="flex items-center gap-2 text-sm font-bold text-orange-500 group-hover:gap-3 transition-all">
+                            Start browsing <ArrowRight className="w-4 h-4" />
+                        </div>
+                    </button>
+
+                    <button
+                        disabled={loading}
+                        onClick={() => pick("business")}
+                        className="w-full text-left bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:border-blue-200 hover:shadow-[0_8px_40px_rgba(59,130,246,0.12)] transition-all duration-300 group"
+                        data-testid="role-client"
+                    >
+                        <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                            <Sparkles className="w-7 h-7 text-blue-500" />
+                        </div>
+                        <div className="text-2xl font-black text-gray-900 mb-2">I'm a Client (Creator)</div>
+                        <p className="text-gray-500 text-sm mb-5">Sell prompts and manage your revenue with a professional CRM.</p>
+                        <ul className="space-y-2 mb-6">
+                            <li className="flex items-start gap-2.5 text-sm text-gray-700">
+                                <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                Post and sell prompts
+                            </li>
+                            <li className="flex items-start gap-2.5 text-sm text-gray-700">
+                                <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                View revenue & sales volume
+                            </li>
+                            <li className="flex items-start gap-2.5 text-sm text-gray-700">
+                                <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                Request payouts easily
+                            </li>
+                        </ul>
+                        <div className="flex items-center gap-2 text-sm font-bold text-blue-500 group-hover:gap-3 transition-all">
+                            Go to CRM <ArrowRight className="w-4 h-4" />
+                        </div>
+                    </button>
+                </div>
+
+                {loading && (
+                    <div className="mt-6 text-center text-sm text-gray-400">Setting up your account…</div>
+                )}
             </div>
         </div>
     );

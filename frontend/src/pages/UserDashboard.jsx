@@ -2,175 +2,190 @@ import React, { useEffect, useState } from "react";
 import { http } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import { Coins, ShoppingBag, History, Plus, ArrowRight, CheckCircle2, Clock } from "lucide-react";
+import {
+    ShoppingBag, BookOpen, Clock, Loader2, ArrowRight,
+    Zap, IndianRupee, CreditCard, ChevronRight, Download
+} from "lucide-react";
 import { toast } from "sonner";
 
 export default function UserDashboard() {
-    const { user, refresh } = useAuth();
-    const [tab, setTab] = useState("wallet");
-    const [packs, setPacks] = useState([]);
+    const { user } = useAuth();
     const [purchases, setPurchases] = useState([]);
-    const [creditHistory, setCreditHistory] = useState([]);
+    const [tab, setTab] = useState("library");
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        http.get("/credits/packs").then((r) => setPacks(r.data || [])).catch(() => {});
-        http.get("/purchases").then((r) => setPurchases(r.data || [])).catch(() => {});
-        http.get("/credits/history").then((r) => setCreditHistory(r.data || [])).catch(() => {});
-    }, []);
+        if (!user) return;
+        http.get("/purchases")
+            .then((r) => setPurchases(r.data || []))
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, [user]);
 
-    const buyPack = async (id) => {
-        try {
-            const r = await http.post("/credits/buy", { pack_id: id });
-            if (r.data.checkout_url) { window.location.href = r.data.checkout_url; return; }
-            toast.success("Credits added!");
-            refresh();
-        } catch (e) { toast.error(e.response?.data?.detail || "Failed"); }
-    };
-
-    const TABS = [
-        ["wallet", "Buy Credits", Coins],
-        ["purchases", "My Prompts", ShoppingBag],
-        ["history", "Transactions", History],
-    ];
+    if (!user) return null;
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-10">
+        <div className="min-h-screen bg-gray-50/50 pb-20">
             {/* Header */}
-            <div className="flex items-end justify-between gap-6 mb-8 flex-wrap">
-                <div>
-                    <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF4F00] mb-2">User Dashboard</div>
-                    <h1 className="font-heading text-5xl md:text-6xl font-black tracking-tighter">Hi {user?.name?.split(" ")[0]}.</h1>
-                </div>
-                <div className="bg-[#FFD600] border-2 border-[#1A1A1A] hard-shadow px-6 py-4">
-                    <div className="text-xs uppercase font-bold tracking-wider">Credit Balance</div>
-                    <div className="font-heading font-black text-4xl inline-flex items-center gap-2">
-                        <Coins className="w-8 h-8" /> {user?.credits || 0}
-                    </div>
-                </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex gap-2 mb-6 border-b-2 border-[#1A1A1A]">
-                {TABS.map(([t, lbl, Icon]) => (
-                    <button key={t} onClick={() => setTab(t)}
-                        className={`px-4 py-2 -mb-0.5 border-2 border-b-0 flex items-center gap-2 text-sm font-bold ${tab === t ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "bg-[#F7F5F0] border-transparent hover:bg-white"}`}
-                        data-testid={`utab-${t}`}>
-                        <Icon className="w-4 h-4" />{lbl}
-                    </button>
-                ))}
-            </div>
-
-            {/* Buy Credits */}
-            {tab === "wallet" && (
-                <div>
-                    <p className="text-[#66635D] mb-6">Purchase credits to unlock premium prompts from top prompt users.</p>
-                    <div className="grid sm:grid-cols-3 gap-5">
-                        {packs.map((p) => (
-                            <div key={p.id} className="bg-white border-2 border-[#1A1A1A] hard-shadow p-6 flex flex-col" data-testid={`pack-${p.id}`}>
-                                <div className="text-xs uppercase font-bold tracking-wider text-[#FF4F00]">{p.label}</div>
-                                <div className="font-heading font-black text-5xl mt-3 inline-flex items-center gap-2">
-                                    <Coins className="w-8 h-8 text-[#FFD600]" />{p.credits}
-                                </div>
-                                <div className="text-sm text-[#66635D] mt-1">credits</div>
-                                <div className="mt-4 font-heading text-3xl font-black">${p.price_usd}</div>
-                                <div className="text-xs text-[#66635D] mb-4">≈ ${(p.price_usd / p.credits).toFixed(2)} per credit</div>
-                                <button onClick={() => buyPack(p.id)} className="btn-vermilion w-full mt-auto" data-testid={`buy-pack-${p.id}`}>
-                                    Buy Pack <ArrowRight className="w-4 h-4 inline ml-1" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* My Purchased Prompts */}
-            {tab === "purchases" && (
-                <div className="space-y-3">
-                    {purchases.length === 0 ? (
-                        <div className="py-16 text-center">
-                            <div className="text-4xl mb-3">🛍️</div>
-                            <div className="font-heading text-2xl font-bold">No prompts yet.</div>
-                            <p className="text-[#66635D] mt-2">Browse the catalog and unlock your first prompt.</p>
-                            <Link to="/marketplace" className="btn-vermilion inline-flex mt-4">Browse Prompts</Link>
+            <div className="bg-white border-b border-gray-100 pt-12 pb-10 px-6 mb-8">
+                <div className="max-w-6xl mx-auto">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div>
+                            <div className="badge badge-orange mb-3 w-fit">User Dashboard</div>
+                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+                                Welcome, <span className="gradient-text-dark">{user?.name?.split(" ")[0]}</span>.
+                            </h1>
                         </div>
-                    ) : purchases.map((pu) => (
-                        <Link
-                            to={`/prompts/${pu.prompt_id}`}
-                            key={pu.id}
-                            className="flex items-center gap-4 bg-white border-2 border-[#1A1A1A] p-4 hover:bg-[#FFD600] transition-colors group"
-                            data-testid={`pur-${pu.id}`}
+                        <div className="flex gap-4">
+                            <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 min-w-[140px]">
+                                <div className="text-xs uppercase font-bold tracking-wider text-orange-800 mb-1">Purchased</div>
+                                <div className="font-black text-3xl text-orange-600">{purchases.length}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-6xl mx-auto px-6">
+                {/* Tabs */}
+                <div className="flex gap-2 mb-8 overflow-x-auto pb-2 custom-scrollbar">
+                    {[
+                        ["library", "My Library"],
+                        ["history", "Transaction History"],
+                    ].map(([t, lbl]) => (
+                        <button key={t} onClick={() => setTab(t)}
+                            className={`px-6 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                                tab === t ? "bg-gray-900 text-white shadow-md" : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                            }`}
                         >
-                            {pu.prompt?.preview_url ? (
-                                <img src={pu.prompt.preview_url} className="w-16 h-16 object-cover border-2 border-[#1A1A1A] flex-shrink-0" alt="" />
-                            ) : (
-                                <div className="w-16 h-16 bg-[#EFEBE1] border-2 border-[#1A1A1A] flex-shrink-0 flex items-center justify-center text-2xl">📝</div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                                <div className="font-heading font-bold">{pu.prompt?.title || "Prompt"}</div>
-                                <div className="text-xs text-[#66635D] mt-1">
-                                    <span className="uppercase font-bold">{pu.prompt?.category}</span>
-                                    {" · "}
-                                    <Clock className="w-3 h-3 inline" /> {new Date(pu.created_at).toLocaleDateString()}
-                                </div>
-                            </div>
-                            <div className="text-sm font-bold flex-shrink-0">
-                                {pu.method === "credits" ? (
-                                    <span className="inline-flex items-center gap-1 text-[#0047FF]">
-                                        <Coins className="w-3.5 h-3.5" /> {pu.credits_used} credits
-                                    </span>
-                                ) : pu.method === "free" ? (
-                                    <span className="text-[#FF4F00]">FREE</span>
-                                ) : (
-                                    <span>${pu.amount_usd}</span>
-                                )}
-                            </div>
-                            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                        </Link>
+                            {lbl}
+                        </button>
                     ))}
                 </div>
-            )}
 
-            {/* Transaction History */}
-            {tab === "history" && (
-                <div>
-                    <div className="text-xs font-bold uppercase tracking-wider text-[#66635D] mb-4">
-                        All credit transactions — purchases &amp; unlocks
-                    </div>
-                    {creditHistory.length === 0 ? (
-                        <p className="text-[#66635D] py-8 text-center">No transactions yet.</p>
-                    ) : (
-                        <div className="space-y-2">
-                            {creditHistory.map((tx) => (
-                                <div
-                                    key={tx.id}
-                                    className="flex items-center gap-4 bg-white border-2 border-[#1A1A1A] p-4"
-                                    data-testid={`tx-${tx.id}`}
-                                >
-                                    <div className={`w-10 h-10 border-2 border-[#1A1A1A] flex items-center justify-center font-black text-lg flex-shrink-0 ${tx.amount > 0 ? "bg-[#FFD600]" : "bg-[#EFEBE1]"}`}>
-                                        {tx.amount > 0 ? "+" : "−"}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="font-bold text-sm">
-                                            {tx.type === "purchase" ? `Bought credit pack` : tx.type === "spend" ? `Unlocked prompt` : tx.type}
-                                        </div>
-                                        {tx.prompt_title && (
-                                            <div className="text-xs text-[#66635D] truncate">{tx.prompt_title}</div>
-                                        )}
-                                        <div className="text-xs text-[#66635D]">
-                                            <Clock className="w-3 h-3 inline mr-1" />
-                                            {new Date(tx.created_at).toLocaleString()}
-                                        </div>
-                                    </div>
-                                    <div className={`font-heading font-black text-xl flex-shrink-0 ${tx.amount > 0 ? "text-green-600" : "text-[#FF4F00]"}`}>
-                                        {tx.amount > 0 ? "+" : ""}{tx.amount}
-                                        <span className="text-xs font-normal ml-1 text-[#66635D]">cr</span>
-                                    </div>
-                                </div>
-                            ))}
+                {/* ─── My Library ─── */}
+                {tab === "library" && (
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                                <BookOpen className="w-6 h-6 text-orange-500" />
+                                Unlocked Prompts
+                            </h2>
+                            <Link to="/marketplace" className="btn btn-ghost !rounded-xl !text-sm">
+                                Browse Marketplace <ArrowRight className="w-4 h-4 ml-1" />
+                            </Link>
                         </div>
-                    )}
-                </div>
-            )}
+
+                        {loading ? (
+                            <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>
+                        ) : purchases.length === 0 ? (
+                            <div className="py-20 text-center bg-gray-50 rounded-2xl border border-gray-100">
+                                <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mx-auto mb-4">
+                                    <ShoppingBag className="w-8 h-8 text-gray-300" />
+                                </div>
+                                <h3 className="font-black text-xl text-gray-900 mb-2">No prompts unlocked yet</h3>
+                                <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">Discover premium AI prompts crafted by experts and unlock them to see them here.</p>
+                                <Link to="/marketplace" className="btn btn-primary !rounded-xl inline-flex">Explore Prompts</Link>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                {purchases.map((pu) => pu.prompt && (
+                                    <Link key={pu.id} to={`/prompts/${pu.prompt_id}`} className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:border-orange-200 hover:shadow-lg transition-all flex flex-col">
+                                        <div className="aspect-video bg-gray-50 overflow-hidden relative">
+                                            {pu.prompt.preview_url ? (
+                                                <img src={pu.prompt.preview_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-300"><BookOpen className="w-10 h-10" /></div>
+                                            )}
+                                            <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg text-gray-900 shadow-sm">
+                                                {pu.prompt.category}
+                                            </div>
+                                        </div>
+                                        <div className="p-5 flex-1 flex flex-col">
+                                            <h3 className="font-bold text-gray-900 text-base mb-2 group-hover:text-orange-500 transition-colors line-clamp-1">{pu.prompt.title}</h3>
+                                            <p className="text-xs text-gray-500 line-clamp-2 mb-4 flex-1">{pu.prompt.description}</p>
+                                            <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                                                <span className="text-xs font-semibold text-gray-400">Purchased on {new Date(pu.created_at).toLocaleDateString()}</span>
+                                                <span className="text-orange-500 font-bold text-xs flex items-center gap-1 group-hover:gap-2 transition-all">
+                                                    View <ChevronRight className="w-3.5 h-3.5" />
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ─── Transaction History ─── */}
+                {tab === "history" && (
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                                <Clock className="w-6 h-6 text-orange-500" />
+                                Transaction History
+                            </h2>
+                        </div>
+
+                        {loading ? (
+                            <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>
+                        ) : purchases.length === 0 ? (
+                            <div className="py-20 text-center bg-gray-50 rounded-2xl border border-gray-100">
+                                <p className="text-gray-400 font-medium">No transactions found.</p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-gray-100">
+                                            <th className="pb-4 px-4 text-xs uppercase font-bold tracking-wider text-gray-400">Date</th>
+                                            <th className="pb-4 px-4 text-xs uppercase font-bold tracking-wider text-gray-400">Prompt</th>
+                                            <th className="pb-4 px-4 text-xs uppercase font-bold tracking-wider text-gray-400">Creator</th>
+                                            <th className="pb-4 px-4 text-xs uppercase font-bold tracking-wider text-gray-400 text-right">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {purchases.map((pu) => (
+                                            <tr key={pu.id} className="hover:bg-gray-50/50 transition-colors">
+                                                <td className="py-4 px-4 text-sm font-medium text-gray-600">
+                                                    {new Date(pu.created_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="py-4 px-4">
+                                                    <div className="flex items-center gap-3">
+                                                        {pu.prompt?.preview_url ? (
+                                                            <img src={pu.prompt.preview_url} className="w-10 h-10 rounded-lg object-cover border border-gray-100" alt="" />
+                                                        ) : (
+                                                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                                                                <BookOpen className="w-4 h-4 text-gray-400" />
+                                                            </div>
+                                                        )}
+                                                        <span className="font-bold text-sm text-gray-900">{pu.prompt?.title || "Unknown"}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="py-4 px-4 text-sm text-gray-500 font-medium">
+                                                    {pu.prompt?.creator?.name || "Unknown"}
+                                                </td>
+                                                <td className="py-4 px-4 text-right">
+                                                    {pu.method === "credits" ? (
+                                                        <span className="inline-flex items-center gap-1 text-sm font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
+                                                            <Zap className="w-3.5 h-3.5" /> {pu.credits_used}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center text-sm font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">
+                                                            ${pu.amount_usd}
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
