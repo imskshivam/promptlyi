@@ -71,6 +71,7 @@ export default function Navbar() {
             </span>
           </NavItem>
           <NavItem to="/custom-works">Custom Work</NavItem>
+          <NavItem to="/blog">Blog</NavItem>
           {user && <NavItem to={dashPath}>Dashboard</NavItem>}
         </nav>
 
@@ -136,6 +137,7 @@ export default function Navbar() {
               { to: "/marketplace", label: "Explore" },
               { to: "/pricing", label: "✨ Pricing" },
               { to: "/custom-works", label: "Custom Work" },
+              { to: "/blog", label: "Blog" },
             ].map(({ to, label }) => (
               <NavLink
                 key={to}

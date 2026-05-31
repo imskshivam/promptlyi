@@ -8,10 +8,11 @@ const LINKS = {
     { label: "Leaderboard", to: "/leaderboard" },
     { label: "Custom Work", to: "/custom-works" },
   ],
-  Creators: [
+  Resources: [
+    { label: "Blog", to: "/blog" },
     { label: "Start Selling", to: "/" },
     { label: "Creator Dashboard", to: "/" },
-    { label: "Pricing", to: "/marketplace" },
+    { label: "Pricing", to: "/pricing" },
   ],
   Legal: [
     { label: "Terms of Service", to: "/terms" },
