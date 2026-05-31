@@ -3,7 +3,8 @@ const express = require("express");
 const { getDb } = require("../config/db");
 const { getCurrentUser } = require("../middleware/auth");
 const { asyncH, HttpError } = require("../middleware/errorHandler");
-const { createCheckout, POLAR_PRODUCTS } = require("../services/polarService");
+const { getDodoClient } = require("../config/dodo");
+const { DODO_PRODUCTS, FRONTEND_ORIGIN } = require("../config/env");
 
 const router = express.Router();
 
@@ -21,21 +22,22 @@ router.get("/packs", asyncH(async (req, res) => {
 router.post("/buy", getCurrentUser, asyncH(async (req, res) => {
     const pack = CREDIT_PACKS[req.body?.pack_id];
     if (!pack) throw new HttpError(404, "Pack not found");
-    const sess = await createCheckout({
-        productId: POLAR_PRODUCTS[pack.product_key],
+    const dodo = getDodoClient();
+    if (!dodo) throw new HttpError(500, "Payment provider not configured");
+    const productId = DODO_PRODUCTS[pack.product_key];
+    if (!productId) throw new HttpError(500, "Product ID missing");
+
+    const sess = await dodo.checkoutSessions.create({
+        product_cart: [{ product_id: productId, quantity: 1 }],
         customer: { email: req.user.email, name: req.user.name },
-        returnPath: "/payments/success",
-        metadata: {
-            kind: "credit_pack", user_id: req.user.id, pack_id: pack.id,
-            credits: String(pack.credits), amount_usd: String(pack.price_usd),
-        },
+        return_url: `${FRONTEND_ORIGIN}/payments/success`,
     });
     res.json({ ok: true, redirect: true, checkout_url: sess.checkout_url, session_id: sess.session_id });
 }));
 
 router.get("/history", getCurrentUser, asyncH(async (req, res) => {
     const db = getDb();
-    const rows = await db.collection("credit_transactions").find({ user_id: req.user.id }, { projection: { _id: 0 } }).sort({ created_at: -1 }).toArray();
+    const rows = await db.collection("credit_transactions").find({ user_id: req.user.id }).sort({ created_at: -1 }).toArray();
     res.json(rows);
 }));
 

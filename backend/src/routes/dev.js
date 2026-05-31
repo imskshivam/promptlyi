@@ -1,9 +1,10 @@
 "use strict";
 const express = require("express");
-const { v4: uuidv4 } = require("uuid");
+
 const { getDb } = require("../config/db");
 const { asyncH } = require("../middleware/errorHandler");
 const { iso, utcNow } = require("../utils/time");
+const { mapId, mapIds, toObjectId } = require("../utils/dbHelpers");
 const { estimateCredits } = require("../services/creditEngine");
 
 const router = express.Router();
@@ -52,10 +53,9 @@ router.post("/seed", asyncH(async (req, res) => {
         { $set: { requires_user_media: "none", user_media_instructions: "" } },
     );
 
-    let demo = await db.collection("users").findOne({ email: "demo-creator@promptbazaar.dev" }, { projection: { _id: 0 } });
+    let demo = await db.collection("users").findOne({ email: "demo-creator@promptbazaar.dev" });
     if (!demo) {
         demo = {
-            id: uuidv4(),
             email: "demo-creator@promptbazaar.dev",
             name: "Arjun Verma",
             picture: "https://images.unsplash.com/photo-1560250097-0b93528c311a?crop=entropy&cs=srgb&fm=jpg&w=200&q=80",
@@ -73,7 +73,6 @@ router.post("/seed", asyncH(async (req, res) => {
         for (const s of SAMPLES) {
             const est = estimateCredits(s.content);
             await db.collection("prompts").insertOne({
-                id: uuidv4(),
                 creator_id: demo.id,
                 published: true,
                 downloads: 12,
@@ -88,8 +87,7 @@ router.post("/seed", asyncH(async (req, res) => {
     }
 
     if ((await db.collection("custom_works").countDocuments({})) === 0) {
-        await db.collection("custom_works").insertOne({
-            id: uuidv4(), user_id: demo.id,
+        await db.collection("custom_works").insertOne({ user_id: demo.id,
             title: "Build full-stack prompt workflow automation",
             description: "Need a prompt engineer to design a multi-step chain for my SaaS onboarding emails.",
             budget_usd: 15000, deadline_days: 14, category: "engineering",

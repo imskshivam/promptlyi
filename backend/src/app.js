@@ -4,7 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const env = require("./config/env");
-require("./config/polar"); // initialise polar client at boot
+require("./config/db"); // initialise db config at boot
 
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 
@@ -29,13 +29,12 @@ api.get("/", (req, res) => res.json({ service: "Promptly", ok: true }));
 api.use("/auth", require("./routes/auth"));
 api.use("/", require("./routes/prompts"));         // /credit-estimate, /prompts*, /purchases
 api.use("/credits", require("./routes/credits").router);
-api.use("/subscriptions", require("./routes/subscriptions").router);
-api.use("/payments", require("./routes/payments"));
 api.use("/creators", require("./routes/creators"));
 api.use("/dashboard", require("./routes/dashboard"));
 api.use("/payouts", require("./routes/payouts"));
 api.use("/custom-works", require("./routes/customWorks"));
 api.use("/dev", require("./routes/dev"));
+api.use("/social", require("./routes/social"));
 // Webhook admin endpoints (events list, transactions)
 api.use("/webhooks", require("./routes/webhook"));
 

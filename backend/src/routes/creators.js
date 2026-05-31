@@ -2,6 +2,7 @@
 const express = require("express");
 const { getDb } = require("../config/db");
 const { asyncH, HttpError } = require("../middleware/errorHandler");
+const { toObjectId, mapId } = require("../utils/dbHelpers");
 
 const router = express.Router();
 
@@ -17,26 +18,35 @@ router.get("/trending", asyncH(async (req, res) => {
     const out = [];
     for (const r of rows) {
         const u = await db.collection("users").findOne(
-            { id: r._id },
-            { projection: { _id: 0, name: 1, picture: 1, id: 1, bio: 1 } },
+            { _id: toObjectId(r._id) },
         );
         if (!u) continue;
-        out.push({ creator: u, total_downloads: r.total_downloads || 0, prompts_count: r.prompts_count || 0 });
+        out.push({ creator: mapId(u), total_downloads: r.total_downloads || 0, prompts_count: r.prompts_count || 0 });
     }
     res.json(out);
 }));
 
 router.get("/:id", asyncH(async (req, res) => {
     const db = getDb();
-    const u = await db.collection("users").findOne({ id: req.params.id }, { projection: { _id: 0 } });
+    let u = await db.collection("users").findOne({ _id: toObjectId(req.params.id) });
     if (!u) throw new HttpError(404, "Creator not found");
-    const prompts = await db.collection("prompts").find({ creator_id: req.params.id, published: true }, { projection: { _id: 0 } }).toArray();
+    u = mapId(u);
+    const prompts = await db.collection("prompts").find({ creator_id: req.params.id, published: true }).toArray();
     const total_downloads = prompts.reduce((s, p) => s + (p.downloads || 0), 0);
-    const publicPrompts = prompts.map((p) => ({ ...p, content: null }));
+    const total_likes = prompts.reduce((s, p) => s + (p.likes_count || 0), 0);
+    const publicPrompts = prompts.map((p) => {
+        const mapped = mapId(p);
+        mapped.content = null;
+        return mapped;
+    });
+
+    const followers_count = await db.collection("follows").countDocuments({ following_id: req.params.id });
+    const following_count = await db.collection("follows").countDocuments({ follower_id: req.params.id });
+
     res.json({
         creator: { id: u.id, name: u.name, picture: u.picture, bio: u.bio || "", created_at: u.created_at },
         prompts: publicPrompts,
-        stats: { prompts_count: prompts.length, total_downloads },
+        stats: { prompts_count: prompts.length, total_downloads, total_likes, followers_count, following_count },
     });
 }));
 

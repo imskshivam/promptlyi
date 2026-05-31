@@ -1,10 +1,11 @@
 "use strict";
 const express = require("express");
-const { v4: uuidv4 } = require("uuid");
+
 const { getDb } = require("../config/db");
 const { getCurrentUser, requirePromptUser } = require("../middleware/auth");
 const { asyncH, HttpError } = require("../middleware/errorHandler");
 const { iso, utcNow } = require("../utils/time");
+const { mapId, mapIds, toObjectId } = require("../utils/dbHelpers");
 
 const router = express.Router();
 
@@ -15,9 +16,8 @@ const CATEGORIES = [
 ];
 
 function publicView(prompt, hideContent = true) {
-    const out = { ...prompt };
-    delete out._id;
-    if (hideContent) out.content = null;
+    const out = mapId(prompt);
+    if (hideContent && out) out.content = null;
     return out;
 }
 
@@ -49,12 +49,12 @@ router.get("/prompts", asyncH(async (req, res) => {
     if (category && category !== "all") query.category = category;
 
     const lim = Math.min(parseInt(limit || "50", 10) || 50, 200);
-    const rows = await db.collection("prompts").find(query, { projection: { _id: 0 } }).sort({ created_at: -1 }).limit(lim).toArray();
+    const rows = await db.collection("prompts").find(query).sort({ created_at: -1 }).limit(lim).toArray();
 
     const out = [];
     for (const p of rows) {
-        const creator = await db.collection("users").findOne({ id: p.creator_id }, { projection: { _id: 0, name: 1, picture: 1, id: 1 } });
-        p.creator = creator;
+        const creator = await db.collection("users").findOne({ _id: toObjectId(p.creator_id) });
+        p.creator = mapId(creator);
         out.push(publicView(p, true));
     }
     res.json(out);
@@ -63,19 +63,16 @@ router.get("/prompts", asyncH(async (req, res) => {
 // ─── My prompts (prompt user only) ───────────────────────────────────────────
 router.get("/prompts/mine", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
-    const rows = await db.collection("prompts").find({ creator_id: req.user.id }, { projection: { _id: 0 } }).sort({ created_at: -1 }).toArray();
-    res.json(rows);
+    const rows = await db.collection("prompts").find({ creator_id: req.user.id }).sort({ created_at: -1 }).toArray();
+    res.json(mapIds(rows));
 }));
 
 // ─── Single prompt ────────────────────────────────────────────────────────────
 router.get("/prompts/:id", asyncH(async (req, res) => {
     const db = getDb();
-    const p = await db.collection("prompts").findOne({ id: req.params.id }, { projection: { _id: 0 } });
+    const p = await db.collection("prompts").findOne({ _id: toObjectId(req.params.id) });
     if (!p) throw new HttpError(404, "Prompt not found");
-    p.creator = await db.collection("users").findOne(
-        { id: p.creator_id },
-        { projection: { _id: 0, name: 1, picture: 1, id: 1, bio: 1 } },
-    );
+    p.creator = mapId(await db.collection("users").findOne({ _id: toObjectId(p.creator_id) }));
 
     let reveal = false;
     const cookieToken = req.cookies?.session_token;
@@ -86,11 +83,11 @@ router.get("/prompts/:id", asyncH(async (req, res) => {
             const jwt = require("jsonwebtoken");
             const { JWT_SECRET } = require("../config/env");
             const payload = jwt.verify(token, JWT_SECRET);
-            const me = await db.collection("users").findOne({ id: payload.sub }, { projection: { _id: 0 } });
+            const me = await db.collection("users").findOne({ _id: toObjectId(payload.sub) });
             if (me) {
-                if (me.id === p.creator_id) reveal = true;
+                if (me._id.toString() === p.creator_id) reveal = true;
                 else {
-                    const owned = await db.collection("purchases").findOne({ user_id: me.id, prompt_id: p.id });
+                    const owned = await db.collection("purchases").findOne({ user_id: me._id.toString(), prompt_id: p._id.toString() });
                     if (owned) reveal = true;
                 }
             }
@@ -109,7 +106,7 @@ router.post("/prompts", getCurrentUser, requirePromptUser, asyncH(async (req, re
     const priceCredits = Math.max(0, parseInt(b.price_credits || 0, 10) || 0);
 
     const doc = {
-        id: uuidv4(),
+
         creator_id: req.user.id,
         title: b.title,
         description: b.description,
@@ -148,7 +145,7 @@ router.post("/prompts", getCurrentUser, requirePromptUser, asyncH(async (req, re
 // ─── Update prompt ────────────────────────────────────────────────────────────
 router.put("/prompts/:id", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
-    const p = await db.collection("prompts").findOne({ id: req.params.id });
+    const p = await db.collection("prompts").findOne({ _id: toObjectId(req.params.id) });
     if (!p) throw new HttpError(404, "Prompt not found");
     if (p.creator_id !== req.user.id) throw new HttpError(403, "Not your prompt");
 
@@ -167,17 +164,17 @@ router.put("/prompts/:id", getCurrentUser, requirePromptUser, asyncH(async (req,
         update.credits_required = update.price_credits;
         update.is_restricted = update.price_credits > 0;
     }
-    if (Object.keys(update).length) await db.collection("prompts").updateOne({ id: req.params.id }, { $set: update });
-    const updated = await db.collection("prompts").findOne({ id: req.params.id }, { projection: { _id: 0 } });
+    if (Object.keys(update).length) await db.collection("prompts").updateOne({ _id: toObjectId(req.params.id) }, { $set: update });
+    const updated = await db.collection("prompts").findOne({ _id: toObjectId(req.params.id) });
     res.json(updated);
 }));
 
 // ─── Delete prompt ────────────────────────────────────────────────────────────
 router.delete("/prompts/:id", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
-    const p = await db.collection("prompts").findOne({ id: req.params.id });
+    const p = await db.collection("prompts").findOne({ _id: toObjectId(req.params.id) });
     if (!p || p.creator_id !== req.user.id) throw new HttpError(404, "Prompt not found");
-    await db.collection("prompts").deleteOne({ id: req.params.id });
+    await db.collection("prompts").deleteOne({ _id: toObjectId(req.params.id) });
     res.json({ ok: true });
 }));
 
@@ -187,7 +184,7 @@ router.post("/prompts/purchase", getCurrentUser, asyncH(async (req, res) => {
     const { prompt_id } = req.body || {};
     if (!prompt_id) throw new HttpError(400, "prompt_id is required");
 
-    const p = await db.collection("prompts").findOne({ id: prompt_id }, { projection: { _id: 0 } });
+    const p = await db.collection("prompts").findOne({ _id: toObjectId(prompt_id) });
     if (!p) throw new HttpError(404, "Prompt not found");
     if (p.creator_id === req.user.id) throw new HttpError(400, "Cannot purchase your own prompt");
 
@@ -200,11 +197,11 @@ router.post("/prompts/purchase", getCurrentUser, asyncH(async (req, res) => {
     // Free prompt
     if (cost === 0) {
         const purchase = {
-            id: uuidv4(), user_id: req.user.id, prompt_id, creator_id: p.creator_id,
+ user_id: req.user.id, prompt_id, creator_id: p.creator_id,
             method: "free", amount_usd: 0, credits_used: 0, created_at: iso(utcNow()),
         };
         await db.collection("purchases").insertOne({ ...purchase });
-        await db.collection("prompts").updateOne({ id: prompt_id }, { $inc: { downloads: 1 } });
+        await db.collection("prompts").updateOne({ _id: toObjectId(prompt_id) }, { $inc: { downloads: 1 } });
         return res.json({ ok: true, purchase, content: p.content });
     }
 
@@ -214,17 +211,17 @@ router.post("/prompts/purchase", getCurrentUser, asyncH(async (req, res) => {
         throw new HttpError(402, `Insufficient credits. You have ${userCredits}, need ${cost}.`);
     }
 
-    await db.collection("users").updateOne({ id: req.user.id }, { $inc: { credits: -cost } });
+    await db.collection("users").updateOne({ _id: toObjectId(req.user.id) }, { $inc: { credits: -cost } });
     await db.collection("credit_transactions").insertOne({
-        id: uuidv4(), user_id: req.user.id, amount: -cost,
+ user_id: req.user.id, amount: -cost,
         type: "spend", ref: p.id, prompt_title: p.title, created_at: iso(utcNow()),
     });
     const purchase = {
-        id: uuidv4(), user_id: req.user.id, prompt_id, creator_id: p.creator_id,
+ user_id: req.user.id, prompt_id, creator_id: p.creator_id,
         method: "credits", amount_usd: 0, credits_used: cost, created_at: iso(utcNow()),
     };
     await db.collection("purchases").insertOne({ ...purchase });
-    await db.collection("prompts").updateOne({ id: prompt_id }, { $inc: { downloads: 1 } });
+    await db.collection("prompts").updateOne({ _id: toObjectId(prompt_id) }, { $inc: { downloads: 1 } });
 
     return res.json({ ok: true, purchase, content: p.content });
 }));
@@ -232,14 +229,13 @@ router.post("/prompts/purchase", getCurrentUser, asyncH(async (req, res) => {
 // ─── Purchase history (client) ────────────────────────────────────────────────
 router.get("/purchases", getCurrentUser, asyncH(async (req, res) => {
     const db = getDb();
-    const rows = await db.collection("purchases").find({ user_id: req.user.id }, { projection: { _id: 0 } }).sort({ created_at: -1 }).toArray();
+    const rows = await db.collection("purchases").find({ user_id: req.user.id }).sort({ created_at: -1 }).toArray();
     for (const r of rows) {
         r.prompt = await db.collection("prompts").findOne(
             { id: r.prompt_id },
-            { projection: { _id: 0, title: 1, preview_url: 1, category: 1, id: 1, price_credits: 1 } },
         );
     }
-    res.json(rows);
+    res.json(mapIds(rows));
 }));
 
 module.exports = router;

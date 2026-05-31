@@ -20,10 +20,13 @@ async function getCurrentUser(req, res, next) {
             return res.status(401).json({ detail: "Invalid or expired session" });
         }
 
-        const user = await db.collection("users").findOne(
-            { id: payload.sub },
-            { projection: { _id: 0, password_hash: 0 } },
+        const { toObjectId, mapId } = require("../utils/dbHelpers");
+
+        let user = await db.collection("users").findOne(
+            { _id: toObjectId(payload.sub) },
+            { projection: { password_hash: 0 } },
         );
+        user = mapId(user);
         if (!user) return res.status(401).json({ detail: "User not found" });
 
         req.user = user;

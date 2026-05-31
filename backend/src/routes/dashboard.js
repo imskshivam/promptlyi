@@ -4,6 +4,7 @@ const { getDb } = require("../config/db");
 const { getCurrentUser, requirePromptUser } = require("../middleware/auth");
 const { asyncH } = require("../middleware/errorHandler");
 const { iso, utcNow, ymd, yearMonth, yearWeek } = require("../utils/time");
+const { mapId, mapIds, toObjectId } = require("../utils/dbHelpers");
 const { MIN_PAYOUT_USD } = require("../config/env");
 
 const router = express.Router();
@@ -13,19 +14,19 @@ router.get("/creator-stats", getCurrentUser, requirePromptUser, asyncH(async (re
     const userId = req.user.id;
     const promptsCount = await db.collection("prompts").countDocuments({ creator_id: userId });
     let totalDownloads = 0;
-    for await (const p of db.collection("prompts").find({ creator_id: userId }, { projection: { _id: 0, downloads: 1 } })) {
+    for await (const p of db.collection("prompts").find({ creator_id: userId })) {
         totalDownloads += p.downloads || 0;
     }
     let earnings = 0, earningsThisMonth = 0;
     const monthStart = new Date(Date.UTC(utcNow().getUTCFullYear(), utcNow().getUTCMonth(), 1));
-    for await (const p of db.collection("purchases").find({ creator_id: userId }, { projection: { _id: 0, amount_usd: 1, created_at: 1 } })) {
+    for await (const p of db.collection("purchases").find({ creator_id: userId })) {
         const amt = p.amount_usd || 0;
         earnings += amt;
         const ts = new Date(p.created_at);
         if (!isNaN(ts.getTime()) && ts >= monthStart) earningsThisMonth += amt;
     }
     let paidOut = 0;
-    for await (const po of db.collection("payouts").find({ user_id: userId, status: { $in: ["pending", "processed"] } }, { projection: { _id: 0, amount_usd: 1 } })) {
+    for await (const po of db.collection("payouts").find({ user_id: userId, status: { $in: ["pending", "processed"] } })) {
         paidOut += po.amount_usd || 0;
     }
     const available = Math.max(0, earnings - paidOut);
@@ -72,7 +73,6 @@ router.get("/creator-revenue", getCurrentUser, requirePromptUser, asyncH(async (
 
     const cursor = db.collection("purchases").find(
         { creator_id: req.user.id, created_at: { $gte: iso(start) } },
-        { projection: { _id: 0 } },
     );
     for await (const p of cursor) {
         const ts = new Date(p.created_at);
@@ -89,15 +89,13 @@ router.get("/creator-revenue", getCurrentUser, requirePromptUser, asyncH(async (
 
 router.get("/creator-sales", getCurrentUser, requirePromptUser, asyncH(async (req, res) => {
     const db = getDb();
-    const sales = await db.collection("purchases").find({ creator_id: req.user.id }, { projection: { _id: 0 } }).sort({ created_at: -1 }).limit(200).toArray();
+    const sales = await db.collection("purchases").find({ creator_id: req.user.id }).sort({ created_at: -1 }).limit(200).toArray();
     for (const s of sales) {
         s.prompt = await db.collection("prompts").findOne(
             { id: s.prompt_id },
-            { projection: { _id: 0, title: 1, preview_url: 1, id: 1 } },
         );
         s.buyer = await db.collection("users").findOne(
             { id: s.user_id },
-            { projection: { _id: 0, name: 1, picture: 1, id: 1 } },
         );
     }
     res.json(sales);

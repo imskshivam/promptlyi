@@ -1,261 +1,153 @@
 "use strict";
 /**
- * Polar Payments Webhook Handler
+ * Dodo Payments Webhook Handler
  */
 
 const express = require("express");
-const { v4: uuidv4 } = require("uuid");
 const { getDb } = require("../config/db");
-const { asyncH, HttpError } = require("../middleware/errorHandler");
+const { asyncH } = require("../middleware/errorHandler");
 const { iso, utcNow } = require("../utils/time");
-const { POLAR_WEBHOOK_SECRET } = require("../config/env");
-const { Webhooks } = require("@polar-sh/express");
-const { CREDIT_PACKS } = require("./credits");
+const { toObjectId } = require("../utils/dbHelpers");
+const { DODO_WEBHOOK_SECRET, DODO_PRODUCTS } = require("../config/env");
+const { getDodoClient } = require("../config/dodo");
 
 const router = express.Router();
 
-async function handleCheckoutUpdated(db, data, webhookId) {
-    if (data.status !== "succeeded" && data.status !== "confirmed") return;
-    
-    const paymentId  = data.id;
-    const metadata   = data.metadata   || {};
-    const amountTotal = data.amount || data.total_amount || 0;
-    const currency    = (data.currency || "USD").toUpperCase();
+const CREDIT_PACKS = {
+    starter: { id: "starter", credits: 100,  price_usd: 3,  label: "Starter Pack", product_key: "pack_starter" },
+    pro:     { id: "pro",     credits: 500,  price_usd: 10,  label: "Pro Pack",     product_key: "pack_pro" },
+    max:     { id: "max",     credits: 1500, price_usd: 25, label: "Max Pack",     product_key: "pack_max" },
+};
 
-    // Save raw transaction
-    await db.collection("transactions").updateOne(
-        { payment_id: paymentId },
-        {
-            $setOnInsert: {
-                id: uuidv4(),
-                webhook_id: webhookId,
-                event_type: "checkout.updated",
-                payment_id: paymentId,
-                amount: amountTotal,
-                currency,
-                status: "succeeded",
-                metadata,
-                created_at: iso(utcNow()),
-            },
-        },
-        { upsert: true }
-    );
+// Map productId back to plan/pack
+function findProductDetails(productId) {
+    if (productId === DODO_PRODUCTS.pack_starter) return { type: "credit_pack", data: CREDIT_PACKS.starter };
+    if (productId === DODO_PRODUCTS.pack_pro) return { type: "credit_pack", data: CREDIT_PACKS.pro };
+    if (productId === DODO_PRODUCTS.pack_max) return { type: "credit_pack", data: CREDIT_PACKS.max };
+    return null;
+}
 
-    const kind = metadata.kind;
+// Ensure express.raw or text is used for this webhook in app.js, or we handle it here
+router.post("/dodo", async (req, res) => {
+    console.log("[payment/dodo] Received webhook");
 
-    // ── Credit pack purchase ──────────────────────────────────────────────
-    if (kind === "credit_pack") {
-        const pack = CREDIT_PACKS[metadata.pack_id];
-        const userId = metadata.user_id;
-        if (!pack || !userId) return;
-
-        const already = await db.collection("polar_processed").findOne({ payment_id: paymentId });
-        if (already) return;
-
-        await db.collection("users").updateOne({ id: userId }, { $inc: { credits: pack.credits } });
-        await db.collection("credit_transactions").insertOne({
-            id: uuidv4(),
-            user_id: userId,
-            amount: pack.credits,
-            type: "purchase",
-            pack_id: pack.id,
-            price_usd: pack.price_usd,
-            payment_id: paymentId,
-            created_at: iso(utcNow()),
-        });
-        await db.collection("polar_processed").insertOne({
-            payment_id: paymentId,
-            user_id: userId,
-            kind,
-            metadata,
-            created_at: iso(utcNow()),
-        });
-        console.log(`[webhook] credit_pack: +${pack.credits} credits → user ${userId}`);
+    const webhookSecret = DODO_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+        console.error("[payment/dodo] DODO_WEBHOOK_SECRET is not configured");
+        return res.status(500).send("Webhook secret not configured");
     }
 
-    // ── Prompt direct purchase ────────────────────────────────────────────
-    if (kind === "prompt") {
-        const userId   = metadata.user_id;
-        const promptId = metadata.prompt_id;
-        if (!userId || !promptId) return;
+    try {
+        const dodo = getDodoClient();
+        if (!dodo) return res.status(500).send("Dodo client not configured");
 
-        const already = await db.collection("polar_processed").findOne({ payment_id: paymentId });
-        if (already) return;
+        const rawPayload = req.rawBody instanceof Buffer
+            ? req.rawBody.toString("utf8")
+            : typeof req.rawBody === "string"
+            ? req.rawBody
+            : JSON.stringify(req.body);
 
-        const prm = await db.collection("prompts").findOne({ id: promptId });
-        if (!prm) return;
+        const event = dodo.webhooks.unwrap(rawPayload, {
+            "webhook-id": req.headers["webhook-id"],
+            "webhook-signature": req.headers["webhook-signature"],
+            "webhook-timestamp": req.headers["webhook-timestamp"],
+        }, webhookSecret);
 
-        const owned = await db.collection("purchases").findOne({ user_id: userId, prompt_id: promptId });
-        if (!owned) {
-            await db.collection("purchases").insertOne({
-                id: uuidv4(),
-                user_id: userId,
-                prompt_id: promptId,
-                creator_id: prm.creator_id,
-                method: "money",
-                amount_usd: parseInt(metadata.amount_usd || 0),
-                credits_used: 0,
-                payment_id: paymentId,
-                created_at: iso(utcNow()),
-            });
-            await db.collection("prompts").updateOne({ id: promptId }, { $inc: { downloads: 1 } });
-        }
+        console.log(`[payment/dodo] Verified event: \${event.type}`);
 
-        await db.collection("polar_processed").insertOne({
-            payment_id: paymentId,
-            user_id: userId,
-            kind,
-            metadata,
-            created_at: iso(utcNow()),
-        });
-        console.log(`[webhook] prompt purchased: ${promptId} by user ${userId}`);
-    }
-}
-
-async function handleSubscriptionEvent(db, data, webhookId, eventType) {
-    const subscriptionId = data.id;
-    const metadata       = data.metadata || {};
-    const userId         = metadata.user_id;
-    const planId         = metadata.plan_id;
-
-    await db.collection("transactions").updateOne(
-        { payment_id: subscriptionId },
-        {
-            $setOnInsert: {
-                id: uuidv4(),
-                webhook_id: webhookId,
-                event_type: eventType,
-                payment_id: subscriptionId,
-                amount: data.amount || data.total_amount || 0,
-                currency: (data.currency || "USD").toUpperCase(),
-                status: "active",
-                metadata,
-                created_at: iso(utcNow()),
-            },
-        },
-        { upsert: true }
-    );
-
-    if (!userId || !planId) return;
-
-    const already = await db.collection("polar_processed").findOne({ payment_id: subscriptionId });
-    if (already) return;
-
-    const expiresAt = new Date(Date.now() + 30 * 24 * 3600 * 1000);
-    await db.collection("users").updateOne(
-        { id: userId },
-        { $set: { subscription_plan: planId, subscription_expires_at: iso(expiresAt) } }
-    );
-    await db.collection("subscriptions").insertOne({
-        id: uuidv4(),
-        user_id: userId,
-        plan_id: planId,
-        status: "active",
-        starts_at: iso(utcNow()),
-        expires_at: iso(expiresAt),
-        payment_id: subscriptionId,
-    });
-    await db.collection("polar_processed").insertOne({
-        payment_id: subscriptionId,
-        user_id: userId,
-        kind: "subscription",
-        metadata,
-        created_at: iso(utcNow()),
-    });
-    console.log(`[webhook] subscription active: plan ${planId} → user ${userId}`);
-}
-
-async function handleRefund(db, data, webhookId, eventType) {
-    const refundId  = data.id;
-    const paymentId = data.charge_id || data.order_id || data.payment_id;
-    const metadata  = data.metadata || {};
-
-    await db.collection("transactions").updateOne(
-        { payment_id: refundId },
-        {
-            $setOnInsert: {
-                id: uuidv4(),
-                webhook_id: webhookId,
-                event_type: eventType,
-                payment_id: refundId,
-                original_payment_id: paymentId,
-                amount: -(data.amount || 0),
-                currency: (data.currency || "USD").toUpperCase(),
-                status: "refunded",
-                metadata,
-                created_at: iso(utcNow()),
-            },
-        },
-        { upsert: true }
-    );
-    console.log(`[webhook] refund recorded: ${refundId} for payment ${paymentId}`);
-}
-
-// Polar Webhook endpoint mounted at /api/webhooks/polar
-router.post("/polar", express.json(), Webhooks({
-    webhookSecret: POLAR_WEBHOOK_SECRET || "fallback_secret",
-    onPayload: async (payload) => {
-        const webhookId = uuidv4();
+        const eventType = event.type;
+        const data = event.data;
         const db = getDb();
-        const eventType = payload.type;
-        const data = payload.data;
 
-        console.log(`[webhook] received: ${eventType} (id=${webhookId})`);
+        if (eventType === "payment.succeeded") {
+            const customerEmail = data.customer?.email;
+            const productId = data.product_cart?.[0]?.product_id;
+            const dodoReferenceId = data.payment_id || data.id;
 
-        await db.collection("webhook_events").insertOne({
-            id: uuidv4(),
-            webhook_id: webhookId,
-            event_type: eventType,
-            payload: payload,
-            received_at: iso(utcNow()),
-        });
+            if (customerEmail && productId) {
+                const user = await db.collection("users").findOne({ email: customerEmail });
+                if (user) {
+                    const productDetails = findProductDetails(productId);
+                    if (!productDetails) {
+                        console.warn(`[payment/dodo] Unknown product ID: \${productId}`);
+                        return res.status(200).send("Unknown product");
+                    }
 
-        try {
-            if (eventType === "checkout.updated") {
-                await handleCheckoutUpdated(db, data, webhookId);
-            } else if (["subscription.active", "subscription.created", "subscription.updated"].includes(eventType)) {
-                if (data.status === "active") {
-                    await handleSubscriptionEvent(db, data, webhookId, eventType);
+                    // Idempotency: skip if already processed
+                    const existing = await db.collection("dodo_processed").findOne({ payment_id: dodoReferenceId });
+                    if (existing) {
+                        console.log(`[payment/dodo] Event \${dodoReferenceId} already processed — skipping`);
+                        return res.status(200).send("Already processed");
+                    }
+
+                    const amountTotal = (data.total_amount || 0) / 100;
+                    const currency = (data.currency || "USD").toUpperCase();
+
+                    // Record transaction
+                    await db.collection("transactions").insertOne({
+                        payment_id: dodoReferenceId,
+                        event_type: eventType,
+                        amount: amountTotal,
+                        currency,
+                        status: "succeeded",
+                        created_at: iso(utcNow()),
+                        user_id: user.id,
+                        product_id: productId
+                    });
+
+                    if (productDetails.type === "credit_pack") {
+                        const pack = productDetails.data;
+                        await db.collection("users").updateOne({ _id: toObjectId(user.id) }, { $inc: { credits: pack.credits } });
+                        await db.collection("credit_transactions").insertOne({
+                            user_id: user.id,
+                            amount: pack.credits,
+                            type: "purchase",
+                            pack_id: pack.id,
+                            price_usd: pack.price_usd,
+                            payment_id: dodoReferenceId,
+                            created_at: iso(utcNow()),
+                        });
+                        console.log(`[payment/dodo] credit_pack: +\${pack.credits} credits → user \${user.id}`);
+                    } else if (productDetails.type === "subscription") {
+                        const plan = productDetails.data;
+                        const expiresAt = new Date(Date.now() + 30 * 24 * 3600 * 1000);
+                        await db.collection("users").updateOne(
+                            { _id: toObjectId(user.id) },
+                            { $set: { subscription_plan: plan.id, subscription_expires_at: iso(expiresAt) } }
+                        );
+                        await db.collection("subscriptions").insertOne({
+                            user_id: user.id,
+                            plan_id: plan.id,
+                            status: "active",
+                            starts_at: iso(utcNow()),
+                            expires_at: iso(expiresAt),
+                            payment_id: dodoReferenceId,
+                        });
+                        console.log(`[payment/dodo] subscription active: plan \${plan.id} → user \${user.id}`);
+                    }
+
+                    await db.collection("dodo_processed").insertOne({
+                        payment_id: dodoReferenceId,
+                        user_id: user.id,
+                        type: productDetails.type,
+                        created_at: iso(utcNow()),
+                    });
+                } else {
+                    console.warn(`[payment/dodo] No user found for email: \${customerEmail}`);
                 }
-            } else if (["refund.created", "refund.updated"].includes(eventType)) {
-                if (data.status === "succeeded") {
-                    await handleRefund(db, data, webhookId, eventType);
-                }
-            } else {
-                console.log(`[webhook] unhandled event type: ${eventType}`);
             }
-        } catch (e) {
-            console.error(`[webhook] processing error for ${eventType}:`, e.message);
-            await db.collection("webhook_events").updateOne(
-                { webhook_id: webhookId },
-                { $set: { processing_error: e.message } }
-            );
         }
+
+        if (eventType === "payment.failed") {
+            const dodoReferenceId = data.payment_id || data.id;
+            console.warn(`[payment/dodo] payment.failed — id: \${dodoReferenceId}`);
+        }
+
+        res.status(200).json({ received: true });
+    } catch (error) {
+        console.error("[payment/dodo] Webhook error:", error);
+        res.status(400).send("Webhook processing failed");
     }
-}));
-
-// Admin: list recent webhook events
-router.get("/polar/events", asyncH(async (req, res) => {
-    const db = getDb();
-    const limit = Math.min(parseInt(req.query.limit || "50"), 200);
-    const events = await db.collection("webhook_events")
-        .find({}, { projection: { _id: 0, payload: 0 } })
-        .sort({ received_at: -1 })
-        .limit(limit)
-        .toArray();
-    res.json(events);
-}));
-
-// Admin: list all transactions
-router.get("/transactions", asyncH(async (req, res) => {
-    const db = getDb();
-    const limit = Math.min(parseInt(req.query.limit || "100"), 500);
-    const rows = await db.collection("transactions")
-        .find({}, { projection: { _id: 0 } })
-        .sort({ created_at: -1 })
-        .limit(limit)
-        .toArray();
-    res.json(rows);
-}));
+});
 
 module.exports = router;
