@@ -2,7 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import {
   Sparkles, ArrowRight, CheckCircle2, Shield,
-  Search, Users, Star, Box, Zap
+  Search, Users, Star, Box, Zap,
+  Wallet, Share2, Instagram, Twitter, Youtube
 } from "lucide-react";
 import PromptCard from "../components/PromptCard";
 
@@ -33,47 +34,44 @@ export default function Landing() {
   return (
     <div className="overflow-x-hidden bg-white">
       {/* ─── HERO SECTION ─── */}
-      <section className="relative min-h-[90vh] flex items-center pt-24 pb-20 overflow-hidden">
-        <div className="absolute inset-0 dot-grid opacity-50 pointer-events-none" />
-        <div className="absolute top-20 right-0 w-96 h-96 bg-orange-400/10 blur-[100px] rounded-full pointer-events-none" />
+      <section className="relative min-h-[90vh] flex items-center pt-24 pb-20 overflow-hidden bg-brand-lt_green">
+        <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
         
         <div className="relative max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center w-full">
           <div className="animate-fadeup">
-            <div className="badge badge-orange mb-6 w-fit">
-              <FlameIcon className="w-3.5 h-3.5" /> #1 AI Prompt Marketplace
+            <div className="badge bg-brand-lt_lime/20 text-brand-lt_lime border-none mb-6 w-fit flex items-center gap-2">
+              <FlameIcon className="w-3.5 h-3.5 text-brand-lt_lime" /> #1 AI Prompt Marketplace
             </div>
             
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight text-gray-900 mb-6">
-              Find perfect <span className="gradient-text-dark">AI prompts</span> in seconds.
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight text-white mb-6">
+              Find perfect <span className="text-brand-lt_lime">AI prompts</span> in seconds.
             </h1>
             
-            <p className="text-lg sm:text-xl text-gray-500 mb-10 max-w-xl leading-relaxed">
+            <p className="text-lg sm:text-xl text-brand-lt_lime/80 mb-10 max-w-xl leading-relaxed">
               Unlock the full power of ChatGPT, Midjourney, and Claude. Browse thousands of top-tier prompts curated by the community. 
-              <span className="font-bold text-orange-500 block mt-2">100% Free. Always.</span>
+              <span className="font-bold text-brand-lt_lime block mt-2">100% Free. Always.</span>
             </p>
             
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <Link to="/marketplace" className="btn btn-primary !rounded-2xl !py-4 !px-8 text-lg w-full sm:w-auto shadow-[0_8px_30px_rgba(249,115,22,0.3)] hover:shadow-[0_12px_40px_rgba(249,115,22,0.4)]">
+              <Link to="/marketplace" className="btn !bg-brand-lt_lime !text-brand-lt_green !border-transparent !rounded-full !py-5 !px-10 text-lg font-bold w-full sm:w-auto shadow-lg hover:shadow-xl hover:!bg-white hover:!text-brand-lt_green transition-all">
                 Explore Prompts <ArrowRight className="w-5 h-5 ml-2" />
               </Link>
-              <Link to="/creator" className="btn btn-ghost !rounded-2xl !py-4 !px-8 text-lg w-full sm:w-auto">
+              <Link to="/creator" className="btn btn-ghost !text-white hover:!bg-white/10 !rounded-full !py-5 !px-10 text-lg font-bold w-full sm:w-auto transition-all">
                 Share a Prompt
               </Link>
             </div>
             
-            <div className="mt-12 flex items-center gap-6 text-sm font-semibold text-gray-400">
-              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500" /> No signup required</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500" /> Free forever</span>
+            <div className="mt-12 flex items-center gap-6 text-sm font-semibold text-brand-lt_lime/70">
+              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-brand-lt_lime" /> No signup required</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-brand-lt_lime" /> Free forever</span>
             </div>
           </div>
 
           <div className="relative lg:h-[600px] flex items-center justify-center animate-fadein delay-200">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-100 to-orange-50 rounded-full blur-3xl opacity-50 animate-pulse-orange" />
-            
-            <div className="relative w-full max-w-md aspect-[4/5] rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-gray-100 transform rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
+            <div className="relative w-full max-w-md aspect-[4/5] rounded-[3rem] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.4)] transform rotate-[-4deg] hover:rotate-0 transition-transform duration-500 border-8 border-brand-lt_lime">
               <img src="https://images.unsplash.com/photo-1693487048787-a19cc08ded79?w=800&q=80" alt="Hero artwork" className="w-full h-full object-cover" />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-8">
-                <div className="badge bg-white/20 text-white backdrop-blur-md border-none mb-3">🎨 Midjourney</div>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-lt_green via-brand-lt_green/60 to-transparent p-8">
+                <div className="badge bg-brand-lt_lime text-brand-lt_green font-bold border-none mb-3">🎨 Midjourney</div>
                 <h3 className="text-white font-black text-2xl leading-tight">Neon Cyberpunk Cityscapes</h3>
               </div>
             </div>
@@ -81,46 +79,99 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─── */}
-      <section className="py-24 bg-gray-50 border-y border-gray-100">
+      {/* ─── HOW IT WORKS (EARNING PLATFORM) ─── */}
+      <section className="py-24 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <div className="badge badge-orange mb-4">How it works</div>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Simple. Fast. <span className="gradient-text-dark">Free.</span></h2>
+            <div className="badge bg-brand-lt_pink text-brand-lt_purple font-bold border-none mb-4 px-4 py-1 rounded-full">Creator Economy</div>
+            <h2 className="text-4xl md:text-6xl font-black text-brand-lt_purple tracking-tight mb-6">
+              Two ways to <span className="text-brand-lt_green">Earn Money.</span>
+            </h2>
+            <p className="text-xl text-gray-600 font-medium">List your prompts on our platform and start earning today. Payout anytime.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 relative">
-            <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-gradient-to-r from-orange-200 via-orange-400 to-orange-200 opacity-50 z-0" />
-            
-            {[
-              { i: Search, title: "Find", desc: "Search thousands of prompts across categories like coding, marketing, and art." },
-              { i: Zap, title: "Copy", desc: "Found what you need? Just click to copy the prompt instantly. No paywalls." },
-              { i: Sparkles, title: "Create", desc: "Paste into your favorite AI tool and watch the magic happen." }
-            ].map((step, idx) => (
-              <div key={idx} className="relative z-10 bg-white rounded-3xl p-8 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] text-center group hover:-translate-y-2 transition-all duration-300">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-orange-50 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-orange-500 transition-all duration-300">
-                  <step.i className="w-8 h-8 text-orange-500 group-hover:text-white transition-colors" />
-                </div>
-                <h3 className="text-2xl font-black text-gray-900 mb-3">{step.title}</h3>
-                <p className="text-gray-500 leading-relaxed">{step.desc}</p>
+          <div className="relative max-w-5xl mx-auto">
+            {/* Step 1: List Prompts */}
+            <div className="bg-brand-lt_light rounded-[3rem] p-8 md:p-12 shadow-sm relative z-10 flex flex-col md:flex-row items-center gap-8 mb-12 hover:-translate-y-1 transition-transform">
+              <div className="w-24 h-24 rounded-[2rem] bg-brand-lt_pink flex items-center justify-center shrink-0">
+                <Box className="w-10 h-10 text-brand-lt_purple" />
               </div>
-            ))}
+              <div className="text-center md:text-left flex-1">
+                <h3 className="text-3xl font-black text-brand-lt_purple mb-3">1. List Your Prompts</h3>
+                <p className="text-gray-600 text-lg font-medium leading-relaxed">Upload your best AI prompts to our marketplace. Set your price and showcase your skills to thousands of daily visitors.</p>
+              </div>
+            </div>
+
+            {/* Split Paths with Animated Arrows */}
+            <div className="hidden md:flex justify-center items-center gap-[20rem] absolute top-[30%] left-0 right-0 z-0">
+               {/* Left Arrow (Direct Sales) */}
+               <div className="flex flex-col items-center animate-bounce text-brand-lt_lime">
+                 <ArrowRight className="w-16 h-16 transform rotate-[135deg] mb-2" />
+               </div>
+               
+               {/* Right Arrow (Share Link) */}
+               <div className="flex flex-col items-center animate-bounce text-brand-lt_pink" style={{animationDelay: '0.5s'}}>
+                 <ArrowRight className="w-16 h-16 transform rotate-[45deg] mb-2" />
+               </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 relative z-10 mb-12">
+              {/* Path 1: Direct Buy */}
+              <div className="bg-brand-lt_green rounded-[3rem] p-10 text-center hover:-translate-y-2 transition-transform duration-300 shadow-xl">
+                <div className="w-20 h-20 mx-auto rounded-[2rem] bg-brand-lt_lime flex items-center justify-center mb-8">
+                  <Users className="w-10 h-10 text-brand-lt_green" />
+                </div>
+                <h3 className="text-3xl font-black text-white mb-4">Users Buy Directly</h3>
+                <p className="text-brand-lt_light/90 text-lg leading-relaxed font-medium">Buyers browse the Promptlyi marketplace, find your amazing prompts, and purchase them directly from our website.</p>
+              </div>
+
+              {/* Path 2: Share Link */}
+              <div className="bg-brand-lt_purple rounded-[3rem] p-10 text-center hover:-translate-y-2 transition-transform duration-300 shadow-xl">
+                <div className="w-20 h-20 mx-auto rounded-[2rem] bg-brand-lt_pink flex items-center justify-center mb-8">
+                  <Share2 className="w-10 h-10 text-brand-lt_purple" />
+                </div>
+                <h3 className="text-3xl font-black text-white mb-4">Share Your Profile</h3>
+                <p className="text-brand-lt_pink/90 text-lg leading-relaxed font-medium mb-8">Generate a custom profile link. Share it in your bio across all your social networks to drive your own audience.</p>
+                
+                <div className="flex justify-center items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"><Instagram className="w-6 h-6" /></div>
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"><Twitter className="w-6 h-6" /></div>
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"><Youtube className="w-6 h-6" /></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Payout */}
+            <div className="bg-brand-lt_pink rounded-[3rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 rounded-[2rem] bg-brand-lt_purple flex items-center justify-center shrink-0">
+                  <Wallet className="w-10 h-10 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-black text-brand-lt_purple mb-2">Easy Payouts Anytime</h3>
+                  <p className="text-brand-lt_purple/80 text-lg font-medium">Withdraw your earnings directly to your bank account instantly.</p>
+                </div>
+              </div>
+              <Link to="/creator" className="btn !bg-brand-lt_purple !text-white hover:!bg-brand-lt_green !rounded-full !py-5 !px-10 text-lg font-bold whitespace-nowrap transition-colors">
+                Start Earning
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ─── TRENDING ─── */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-brand-lt_lime">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-16">
             <div>
-              <h2 className="text-4xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                <FlameIcon className="w-8 h-8 text-orange-500" /> Trending Now
+              <h2 className="text-5xl font-black text-brand-lt_green tracking-tight flex items-center gap-4">
+                <FlameIcon className="w-10 h-10 text-brand-lt_green" /> Trending Now
               </h2>
-              <p className="text-gray-500 mt-2">The most popular prompts this week.</p>
+              <p className="text-brand-lt_green/80 text-xl font-medium mt-3">The most popular prompts this week.</p>
             </div>
-            <Link to="/marketplace" className="btn btn-ghost !rounded-xl !py-2.5">
-              View All Prompts <ArrowRight className="w-4 h-4 ml-1" />
+            <Link to="/marketplace" className="btn !bg-brand-lt_green !text-brand-lt_lime !rounded-full !py-4 !px-8 text-lg font-bold hover:!bg-white hover:!text-brand-lt_green transition-colors">
+              View All Prompts <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -130,21 +181,21 @@ export default function Landing() {
       </section>
 
       {/* ─── CTA ─── */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto bg-gradient-to-br from-orange-500 to-orange-600 rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden shadow-[0_20px_60px_rgba(249,115,22,0.3)]">
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-5xl mx-auto bg-brand-lt_purple rounded-[4rem] p-16 md:p-24 text-center relative overflow-hidden shadow-2xl">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay" />
           <div className="relative z-10">
-            <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-6">
-              Stop guessing. Start prompting.
+            <h2 className="text-5xl md:text-7xl font-black text-white tracking-tight mb-8">
+              Stop guessing. <br/>Start prompting.
             </h2>
-            <p className="text-xl text-orange-100 max-w-2xl mx-auto mb-10">
+            <p className="text-2xl text-brand-lt_pink font-medium max-w-2xl mx-auto mb-12">
               Join thousands of creators, marketers, and developers finding their next great idea on Promptlyi.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/marketplace" className="btn btn-white !rounded-2xl !py-4 !px-10 text-lg shadow-[0_8px_30px_rgba(0,0,0,0.15)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)]">
+            <div className="flex flex-col sm:flex-row justify-center gap-6">
+              <Link to="/marketplace" className="btn !bg-brand-lt_lime !text-brand-lt_green !rounded-full !py-5 !px-12 text-xl font-black hover:scale-105 transition-transform shadow-xl">
                 Browse Prompts
               </Link>
-              <Link to="/creator" className="btn !bg-orange-700 !text-white !border-transparent !rounded-2xl !py-4 !px-10 text-lg hover:!bg-orange-800">
+              <Link to="/creator" className="btn !bg-white/10 !text-white !border-white/20 !rounded-full !py-5 !px-12 text-xl font-bold hover:!bg-white/20 transition-all">
                 Share a Prompt
               </Link>
             </div>

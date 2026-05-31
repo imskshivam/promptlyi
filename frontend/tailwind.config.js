@@ -26,14 +26,22 @@ module.exports = {
                 accent:     { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
                 destructive:{ DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
                 border: "hsl(var(--border))",
-                input:  "hsl(var(--input))",
-                ring:   "hsl(var(--ring))",
                 brand: {
-                    orange:   "#f97316",
-                    orange_d: "#ea580c",
-                    dark:     "#0f0f0f",
-                    surface:  "#fef9f5",
-                    muted:    "#6b7280",
+                    lt_green:  "#254f1a",
+                    lt_lime:   "#d2e823",
+                    lt_pink:   "#e9c0e9",
+                    lt_purple: "#53256a",
+                    lt_red:    "#502030",
+                    lt_light:  "#f3f3f1",
+                    primary:   "#9D00FF", // vibrant purple
+                    secondary: "#DE811D", // custom orange
+                    tertiary:  "#6BFF00", // lime green
+                    quaternary:"#5B8040", // olive green
+                    orange:    "#DE811D", // override orange with new one
+                    orange_d:  "#c06b12", // darker shade
+                    dark:      "#0f0f0f",
+                    surface:   "#fef9f5",
+                    muted:     "#6b7280",
                     // Legacy keys kept for any existing usage
                     sand:      "#F7F5F0",
                     ink:       "#1A1A1A",
