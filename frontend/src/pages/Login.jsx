@@ -36,30 +36,30 @@ export default function Login() {
             <div className="w-full max-w-md">
                 {/* Icon */}
                 <div className="flex justify-center mb-8">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-[0_8px_24px_rgba(249,115,22,0.35)]">
-                        <Zap className="w-8 h-8 text-white fill-white" />
+                    <div className="w-20 h-20 rounded-[2rem] bg-brand-lt_pink flex items-center justify-center shadow-lg border-4 border-brand-lt_light">
+                        <Zap className="w-10 h-10 text-brand-lt_purple fill-brand-lt_purple" />
                     </div>
                 </div>
 
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="badge badge-orange mx-auto w-fit mb-3">
-                        <Sparkles className="w-3.5 h-3.5" /> Secure Authentication
+                    <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-brand-lt_lime text-brand-lt_green text-xs font-black uppercase tracking-wider mx-auto mb-4">
+                        <Sparkles className="w-4 h-4" /> Secure Authentication
                     </div>
                     <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-3">
-                        Sign in to <span className="gradient-text-dark">Promptlyi</span>
+                        Sign in to <span className="text-brand-lt_purple">Promptlyi</span>
                     </h1>
-                    <p className="text-gray-500 text-sm leading-relaxed">
+                    <p className="text-brand-lt_purple/70 text-base font-medium leading-relaxed max-w-sm mx-auto">
                         Use your Google account to quickly and securely access thousands of premium AI prompts.
                     </p>
                 </div>
 
                 {/* Card */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_30px_rgba(0,0,0,0.07)] flex flex-col items-center">
+                <div className="bg-white border-4 border-brand-lt_light rounded-[3rem] p-8 shadow-xl flex flex-col items-center hover:border-brand-lt_pink transition-colors">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-8 gap-4">
-                            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-                            <p className="text-sm font-semibold text-gray-700">Authenticating…</p>
+                            <Loader2 className="w-10 h-10 animate-spin text-brand-lt_purple" />
+                            <p className="text-sm font-black text-brand-lt_purple">Authenticating…</p>
                         </div>
                     ) : (
                         <div className="w-full flex justify-center py-4">
@@ -76,27 +76,27 @@ export default function Login() {
                     )}
 
                     {error && (
-                        <div className="mt-5 w-full bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 text-center rounded-xl">
+                        <div className="mt-5 w-full bg-brand-lt_pink/20 border-4 border-brand-lt_pink text-brand-lt_purple font-bold text-sm px-5 py-4 text-center rounded-[2rem]">
                             {error}
                         </div>
                     )}
 
                     {/* Trust badges */}
-                    <div className="mt-6 pt-5 border-t border-gray-50 w-full flex justify-center gap-6 text-xs text-gray-400">
-                        <span className="flex items-center gap-1.5">
-                            <Shield className="w-3.5 h-3.5 text-orange-400" /> Secure OAuth
+                    <div className="mt-6 pt-6 border-t-4 border-brand-lt_light w-full flex justify-center gap-8 text-xs font-bold text-brand-lt_purple/60">
+                        <span className="flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-brand-lt_green" /> Secure OAuth
                         </span>
-                        <span className="flex items-center gap-1.5">
-                            <Zap className="w-3.5 h-3.5 text-orange-400" /> Instant Access
+                        <span className="flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-brand-lt_lime fill-brand-lt_lime" /> Instant Access
                         </span>
                     </div>
                 </div>
 
-                <div className="mt-6 text-xs text-center text-gray-400">
+                <div className="mt-8 text-sm font-bold text-center text-brand-lt_purple/50">
                     By continuing you agree to our{" "}
-                    <a href="/terms" className="text-orange-500 hover:underline">Terms</a>
+                    <a href="/terms" className="text-brand-lt_purple hover:underline transition-all">Terms</a>
                     {" "}and{" "}
-                    <a href="/privacy" className="text-orange-500 hover:underline">Privacy Policy</a>.
+                    <a href="/privacy" className="text-brand-lt_purple hover:underline transition-all">Privacy Policy</a>.
                 </div>
             </div>
         </div>

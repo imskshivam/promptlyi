@@ -32,23 +32,23 @@ export default function Footer() {
   return (
     <footer className="bg-gray-950 text-white mt-0">
       {/* Newsletter strip */}
-      <div className="border-b border-white/6">
+      <div className="border-b-4 border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
-            <h3 className="text-xl font-black text-white mb-1">Stay in the loop</h3>
-            <p className="text-gray-400 text-sm">Get the best new prompts delivered to your inbox every week.</p>
+            <h3 className="text-2xl font-black text-white mb-2">Stay in the loop</h3>
+            <p className="text-white/60 text-base font-bold">Get the best new prompts delivered to your inbox every week.</p>
           </div>
           <form className="flex gap-3 max-w-sm w-full" onSubmit={(e) => e.preventDefault()}>
             <input
               type="email"
               placeholder="your@email.com"
-              className="flex-1 bg-white/6 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-orange-500/60 focus:bg-white/8 transition-all"
+              className="flex-1 bg-white/5 border-2 border-white/10 rounded-full px-5 py-3 text-base font-bold text-white placeholder-white/30 focus:outline-none focus:border-brand-lt_lime focus:bg-white/10 transition-all"
             />
             <button
               type="submit"
-              className="btn btn-primary !rounded-xl !py-3 !px-4 !text-sm shrink-0"
+              className="btn !bg-brand-lt_lime !text-brand-lt_green hover:!bg-brand-lt_pink hover:!text-brand-lt_purple !rounded-full !py-3 !px-5 shrink-0 transition-colors"
             >
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-5 h-5 font-black" />
             </button>
           </form>
         </div>
@@ -58,26 +58,26 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-5 gap-10">
         {/* Brand */}
         <div className="md:col-span-2">
-          <Link to="/" className="flex items-center gap-2.5 mb-5 group w-fit">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-[0_4px_12px_rgba(249,115,22,0.4)]">
-              <Zap className="w-5 h-5 text-white fill-white" />
+          <Link to="/" className="flex items-center gap-3 mb-6 group w-fit">
+            <div className="w-12 h-12 rounded-2xl bg-brand-lt_pink flex items-center justify-center shadow-lg border-2 border-transparent group-hover:border-white transition-all">
+              <Zap className="w-6 h-6 text-brand-lt_purple fill-brand-lt_purple" />
             </div>
-            <span className="font-black text-xl text-white">Promptlyi</span>
+            <span className="font-black text-2xl text-white">Promptlyi</span>
           </Link>
-          <p className="text-gray-400 text-sm leading-relaxed max-w-xs mb-6">
+          <p className="text-white/60 text-sm font-bold leading-relaxed max-w-xs mb-8">
             The world's largest curated marketplace for AI prompts. 
             Discover, create, and monetize your best prompts.
           </p>
           {/* Socials */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {SOCIALS.map(({ icon: Icon, href, label }) => (
               <a
                 key={label}
                 href={href}
                 aria-label={label}
-                className="w-9 h-9 rounded-xl bg-white/6 hover:bg-orange-500 border border-white/8 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-200"
+                className="w-12 h-12 rounded-full bg-white/5 hover:bg-brand-lt_lime border-2 border-white/10 flex items-center justify-center text-white/60 hover:text-brand-lt_green hover:border-brand-lt_lime transition-all duration-200"
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-5 h-5" />
               </a>
             ))}
           </div>
@@ -86,13 +86,13 @@ export default function Footer() {
         {/* Link columns */}
         {Object.entries(LINKS).map(([heading, items]) => (
           <div key={heading}>
-            <div className="text-xs font-bold uppercase tracking-[0.12em] text-orange-400 mb-4">{heading}</div>
-            <ul className="space-y-3">
+            <div className="text-sm font-black uppercase tracking-widest text-brand-lt_lime mb-6">{heading}</div>
+            <ul className="space-y-4">
               {items.map(({ label, to }) => (
                 <li key={label}>
                   <Link
                     to={to}
-                    className="text-sm text-gray-400 hover:text-white transition-colors duration-200"
+                    className="text-base font-bold text-white/60 hover:text-white transition-colors duration-200"
                   >
                     {label}
                   </Link>
@@ -104,15 +104,15 @@ export default function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-white/6">
-        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-500">
+      <div className="border-t-2 border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm font-bold text-white/40">
             © {new Date().getFullYear()} Promptlyi. All rights reserved.
           </p>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-gray-500">Made with</span>
-            <span className="text-orange-500">♥</span>
-            <span className="text-xs text-gray-500">for creators worldwide</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-bold text-white/40">Made with</span>
+            <span className="text-brand-lt_pink text-lg">♥</span>
+            <span className="text-sm font-bold text-white/40">for creators worldwide</span>
           </div>
         </div>
       </div>

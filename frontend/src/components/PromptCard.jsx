@@ -26,10 +26,10 @@ export default function PromptCard({ prompt, compact = false }) {
     <Link
       to={`/prompts/${prompt.id}`}
       data-testid={`prompt-card-${prompt.id}`}
-      className="prompt-card-new group flex flex-row sm:flex-col overflow-hidden bg-white border border-gray-100 rounded-2xl sm:rounded-3xl hover:shadow-lg transition-all"
+      className="prompt-card-new group flex flex-row sm:flex-col overflow-hidden bg-white border-4 border-transparent rounded-[2rem] hover:border-brand-lt_pink hover:shadow-2xl transition-all"
     >
       {/* Image */}
-      <div className="relative aspect-square sm:aspect-[4/3] w-32 sm:w-full flex-shrink-0 bg-gray-50 border-r sm:border-r-0 sm:border-b border-gray-100 overflow-hidden">
+      <div className="relative aspect-square sm:aspect-[4/3] w-32 sm:w-full flex-shrink-0 bg-gray-50 border-r sm:border-r-0 sm:border-b-4 border-brand-lt_light overflow-hidden">
         <img
           src={prompt.preview_url || FALLBACK_IMG}
           alt={prompt.title}
@@ -40,12 +40,12 @@ export default function PromptCard({ prompt, compact = false }) {
         {/* Overlay badges */}
         <div className="absolute top-2 left-2 sm:top-3 sm:left-3 right-2 sm:right-3 flex flex-col sm:flex-row items-start sm:items-start justify-between gap-1.5 sm:gap-2">
           {prompt.is_restricted ? (
-            <div className="flex items-center gap-1 bg-gray-900 text-white text-[9px] sm:text-[10px] font-bold uppercase px-2 py-1 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg shadow">
-              <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-orange-400" />
+            <div className="flex items-center gap-1 bg-brand-lt_purple text-white text-[9px] sm:text-[10px] font-black uppercase px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-xl shadow-md">
+              <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-brand-lt_lime" />
               {prompt.price_credits || prompt.credits_required || 0} CR
             </div>
           ) : (
-            <div className="flex items-center gap-1 bg-orange-500 text-white text-[9px] sm:text-[10px] font-bold uppercase px-2 py-1 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg shadow">
+            <div className="flex items-center gap-1 bg-brand-lt_lime text-brand-lt_green text-[9px] sm:text-[10px] font-black uppercase px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-xl shadow-md">
               FREE
             </div>
           )}
@@ -62,8 +62,8 @@ export default function PromptCard({ prompt, compact = false }) {
       </div>
 
       {/* Content */}
-      <div className="p-3 sm:p-4 flex flex-col flex-1 min-w-0">
-        <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-3 group-hover:text-orange-500 transition-colors duration-200">
+      <div className="p-4 sm:p-5 flex flex-col flex-1 min-w-0">
+        <h3 className="font-black text-brand-lt_purple text-base leading-snug line-clamp-2 mb-3 group-hover:text-brand-lt_green transition-colors duration-200">
           {prompt.title}
         </h3>
 
@@ -74,17 +74,17 @@ export default function PromptCard({ prompt, compact = false }) {
         )}
 
         {/* Footer row */}
-        <div className="mt-auto flex items-center justify-between pt-2 border-t border-gray-50">
+        <div className="mt-auto flex items-center justify-between pt-3 border-t-2 border-brand-lt_light">
           {/* Creator */}
           <div className="flex items-center gap-2 min-w-0">
             {prompt.creator?.picture ? (
               <img
                 src={prompt.creator.picture}
-                className="w-6 h-6 rounded-full border-2 border-white shadow-sm flex-shrink-0"
+                className="w-7 h-7 rounded-full border-2 border-brand-lt_light shadow-sm flex-shrink-0"
                 alt=""
               />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-orange-100 border-2 border-white shadow-sm flex-shrink-0 flex items-center justify-center text-[9px] font-bold text-orange-600">
+              <div className="w-7 h-7 rounded-full bg-brand-lt_pink border-2 border-brand-lt_light shadow-sm flex-shrink-0 flex items-center justify-center text-[10px] font-black text-brand-lt_purple">
                 {(prompt.creator?.name || "C")[0].toUpperCase()}
               </div>
             )}
@@ -95,12 +95,12 @@ export default function PromptCard({ prompt, compact = false }) {
 
           {/* Stats */}
           <div className="flex items-center gap-3 flex-shrink-0">
-            <span className="flex items-center gap-1 text-xs text-gray-400">
-              <Heart className="w-3 h-3 text-orange-400" fill={prompt.likes_count > 0 ? "#fb923c" : "none"} />
+            <span className="flex items-center gap-1 text-xs font-bold text-gray-400 group-hover:text-brand-lt_pink transition-colors">
+              <Heart className="w-4 h-4 text-brand-lt_pink" fill={prompt.likes_count > 0 ? "#e9c0e9" : "none"} />
               {prompt.likes_count || 0}
             </span>
-            <span className="flex items-center gap-1 text-xs text-gray-400">
-              <Download className="w-3 h-3" />
+            <span className="flex items-center gap-1 text-xs font-bold text-gray-400 group-hover:text-brand-lt_purple transition-colors">
+              <Download className="w-4 h-4" />
               {prompt.downloads || 0}
             </span>
           </div>

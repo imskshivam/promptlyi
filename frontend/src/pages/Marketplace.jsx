@@ -57,53 +57,53 @@ export default function Marketplace() {
     const clearSearch  = ()  => { setInputQ(""); setQ(""); fetchPrompts(cat, "", sort); };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-brand-lt_light">
             {/* ─── Hero Header ─── */}
-            <div className="bg-white border-b border-gray-100 py-12 px-6">
+            <div className="bg-brand-lt_green border-none py-12 px-6">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                         <div>
-                            <div className="badge badge-orange mb-4 w-fit">
+                            <div className="badge bg-brand-lt_lime/20 text-brand-lt_lime border-none mb-4 w-fit">
                                 <Sparkles className="w-3.5 h-3.5" /> Community Prompts
                             </div>
-                            <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tight">
-                                Discover <span className="gradient-text-dark">prompts.</span>
+                            <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight">
+                                Discover <span className="text-brand-lt_lime">prompts.</span>
                             </h1>
-                            <p className="text-gray-500 mt-3 max-w-md text-base">
+                            <p className="text-brand-lt_lime/80 mt-3 max-w-md text-base font-medium">
                                 Handcrafted by the community. All prompts are{" "}
-                                <span className="font-bold text-orange-500">100% free</span>.
+                                <span className="font-bold text-brand-lt_lime">100% free</span>.
                             </p>
                         </div>
 
                         <div className="flex flex-col gap-3 items-start md:items-end">
                             {/* Search */}
-                            <form onSubmit={handleSearch} className="flex items-center bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden hover:border-orange-300 transition-colors">
-                                <Search className="w-4 h-4 mx-4 text-gray-400 flex-shrink-0" />
+                            <form onSubmit={handleSearch} className="flex items-center bg-white border-4 border-transparent rounded-[2rem] shadow-lg overflow-hidden hover:border-brand-lt_pink transition-colors">
+                                <Search className="w-5 h-5 mx-4 text-brand-lt_purple flex-shrink-0" />
                                 <input
                                     value={inputQ}
                                     onChange={(e) => setInputQ(e.target.value)}
                                     placeholder="Search prompts…"
-                                    className="py-3 pr-2 bg-transparent outline-none text-sm w-52 text-gray-700"
+                                    className="py-4 pr-2 bg-transparent outline-none text-base w-56 text-brand-lt_purple font-bold placeholder:text-brand-lt_purple/50"
                                     data-testid="marketplace-search-input"
                                 />
                                 {inputQ && (
-                                    <button type="button" onClick={clearSearch} className="px-2 text-gray-400 hover:text-gray-700">
-                                        <X className="w-4 h-4" />
+                                    <button type="button" onClick={clearSearch} className="px-2 text-brand-lt_purple/50 hover:text-brand-lt_purple">
+                                        <X className="w-5 h-5" />
                                     </button>
                                 )}
-                                <button type="submit" className="px-5 py-3 bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors" data-testid="marketplace-search-btn">
+                                <button type="submit" className="px-8 py-4 bg-brand-lt_lime text-brand-lt_green text-base font-black hover:bg-brand-lt_pink hover:text-brand-lt_purple transition-colors" data-testid="marketplace-search-btn">
                                     Go
                                 </button>
                             </form>
 
                             {/* Share CTA */}
                             {user ? (
-                                <Link to="/creator" className="btn btn-primary !rounded-xl !py-2 !px-5 !text-sm">
-                                    <PenSquare className="w-3.5 h-3.5" /> Share Your Prompt
+                                <Link to="/creator" className="btn !bg-brand-lt_pink !text-brand-lt_purple hover:!bg-brand-lt_purple hover:!text-white !border-transparent !rounded-full !py-3 !px-6 !text-sm font-bold transition-all">
+                                    <PenSquare className="w-4 h-4 mr-1" /> Share Your Prompt
                                 </Link>
                             ) : (
-                                <button onClick={login} className="btn btn-primary !rounded-xl !py-2 !px-5 !text-sm">
-                                    <PenSquare className="w-3.5 h-3.5" /> Share Your Prompt
+                                <button onClick={login} className="btn !bg-brand-lt_pink !text-brand-lt_purple hover:!bg-brand-lt_purple hover:!text-white !border-transparent !rounded-full !py-3 !px-6 !text-sm font-bold transition-all">
+                                    <PenSquare className="w-4 h-4 mr-1" /> Share Your Prompt
                                 </button>
                             )}
                         </div>
@@ -122,10 +122,10 @@ export default function Marketplace() {
                                 key={s.id}
                                 onClick={() => setSort(s.id)}
                                 data-testid={`sort-${s.id}`}
-                                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold border-2 transition-all ${
                                     sort === s.id
-                                        ? "bg-orange-500 text-white border-orange-500 shadow-sm"
-                                        : "bg-white text-gray-600 border-gray-200 hover:border-orange-300 hover:text-orange-500"
+                                        ? "bg-brand-lt_purple text-white border-brand-lt_purple shadow-sm"
+                                        : "bg-white text-gray-600 border-transparent hover:border-brand-lt_pink hover:text-brand-lt_purple"
                                 }`}
                             >
                                 <Icon className="w-3 h-3" /> {s.label}
@@ -137,7 +137,7 @@ export default function Marketplace() {
                 {/* ─── Category Filters ─── */}
                 <div className="mb-8">
                     <div className="flex items-center gap-2 mb-3">
-                        <SlidersHorizontal className="w-4 h-4 text-orange-400" />
+                        <SlidersHorizontal className="w-4 h-4 text-brand-lt_purple" />
                         <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Browse by category</span>
                     </div>
                     <div className="flex gap-2 flex-wrap pb-4 border-b border-gray-100">
@@ -145,10 +145,10 @@ export default function Marketplace() {
                             <button
                                 key={c.id}
                                 onClick={() => setCat(c.id)}
-                                className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                                className={`px-5 py-2 rounded-full text-sm font-bold border-2 transition-all ${
                                     cat === c.id
-                                        ? "bg-gray-900 text-white border-gray-900"
-                                        : "bg-white text-gray-600 border-gray-200 hover:border-orange-300 hover:text-orange-500"
+                                        ? "bg-brand-lt_purple text-white border-brand-lt_purple shadow-md"
+                                        : "bg-white text-gray-600 border-transparent hover:border-brand-lt_pink hover:text-brand-lt_purple"
                                 }`}
                                 data-testid={`cat-${c.id}`}
                             >
@@ -159,11 +159,13 @@ export default function Marketplace() {
                 </div>
 
                 {/* ─── Results Header ─── */}
-                <div className="flex items-center gap-2 mb-6">
-                    <Flame className="w-5 h-5 text-orange-500" />
-                    <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="w-10 h-10 rounded-full bg-brand-lt_pink flex items-center justify-center">
+                        <Flame className="w-5 h-5 text-brand-lt_purple" />
+                    </div>
+                    <h2 className="text-3xl font-black text-brand-lt_purple tracking-tight">
                         {cat === "all" ? "All Prompts" : `${CATS.find(c => c.id === cat)?.label} Prompts`}
-                        {q && <span className="text-gray-400 text-base font-normal"> · "{q}"</span>}
+                        {q && <span className="text-brand-lt_purple/50 text-2xl font-bold"> · "{q}"</span>}
                     </h2>
                     {!loading && <span className="text-xs font-semibold text-gray-400 ml-auto">{prompts.length} prompts</span>}
                 </div>
@@ -176,14 +178,14 @@ export default function Marketplace() {
                         ))}
                     </div>
                 ) : prompts.length === 0 ? (
-                    <div className="py-20 text-center">
-                        <div className="text-5xl mb-4">🔍</div>
-                        <div className="text-2xl font-bold text-gray-900">No prompts found.</div>
-                        <p className="text-gray-500 mt-2">Try a different category or search term.</p>
+                    <div className="py-24 text-center bg-white rounded-[3rem] border-4 border-brand-lt_pink border-dashed">
+                        <div className="text-6xl mb-6">🔍</div>
+                        <div className="text-3xl font-black text-brand-lt_purple">No prompts found.</div>
+                        <p className="text-brand-lt_purple/70 mt-3 font-medium text-lg">Try a different category or search term.</p>
                         {(cat !== "all" || q) && (
                             <button
                                 onClick={() => { setCat("all"); setQ(""); setInputQ(""); }}
-                                className="mt-6 btn btn-primary !rounded-xl"
+                                className="mt-8 btn !bg-brand-lt_lime !text-brand-lt_green hover:!bg-brand-lt_pink hover:!text-brand-lt_purple !rounded-full !px-8 !py-3 font-black text-lg transition-colors"
                             >
                                 Clear filters
                             </button>

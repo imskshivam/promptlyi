@@ -17,14 +17,14 @@ const EMPTY = {
 
 function StatCard({ label, value, icon: Icon, color, iconColor }) {
     return (
-        <div className={`rounded-3xl p-6 border border-gray-100 ${color} transition-all hover:shadow-md`}>
+        <div className={`rounded-[2rem] p-6 border-4 border-transparent bg-white hover:border-brand-lt_pink transition-all shadow-lg`}>
             <div className="flex items-center justify-between mb-4">
-                <div className="text-xs uppercase font-bold tracking-wider opacity-80">{label}</div>
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-white/50 backdrop-blur ${iconColor}`}>
-                    <Icon className="w-5 h-5" />
+                <div className="text-xs uppercase font-black tracking-wider text-brand-lt_purple opacity-80">{label}</div>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-brand-lt_pink text-brand-lt_purple`}>
+                    <Icon className="w-6 h-6" />
                 </div>
             </div>
-            <div className="font-black text-4xl">{value}</div>
+            <div className="font-black text-4xl text-brand-lt_purple">{value}</div>
         </div>
     );
 }
@@ -115,15 +115,15 @@ export default function CreatorDashboard() {
     const commission = useMemo(() => Math.round((parseInt(payoutAmount) || 0) * 0.05), [payoutAmount]);
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20">
+        <div className="min-h-screen bg-brand-lt_light pb-20">
             {/* Header */}
-            <div className="bg-white border-b border-gray-100 pt-12 pb-10 px-6 mb-8">
+            <div className="bg-brand-lt_green border-none pt-12 pb-10 px-6 mb-8">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>
-                            <div className="badge badge-orange mb-3 w-fit">Client Dashboard</div>
-                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
-                                Hi, <span className="gradient-text-dark">{user?.name?.split(" ")[0]}</span>.
+                            <div className="badge bg-brand-lt_lime/20 text-brand-lt_lime border-none mb-3 w-fit">Creator Dashboard</div>
+                            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
+                                Hi, <span className="text-brand-lt_lime">{user?.name?.split(" ")[0]}</span>.
                             </h1>
                         </div>
                     </div>
@@ -152,8 +152,8 @@ export default function CreatorDashboard() {
                         ["history", "Purchases History"],
                     ].map(([t, lbl]) => (
                         <button key={t} onClick={() => setTab(t)}
-                            className={`px-5 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
-                                tab === t ? "bg-gray-900 text-white shadow-md" : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                            className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all border-2 ${
+                                tab === t ? "bg-brand-lt_purple text-white shadow-md border-brand-lt_purple" : "bg-white text-gray-600 hover:border-brand-lt_pink border-transparent"
                             }`}
                             data-testid={`tab-${t}`}>{lbl}</button>
                     ))}
@@ -163,20 +163,20 @@ export default function CreatorDashboard() {
                 {tab === "overview" && (
                     <div className="grid md:grid-cols-12 gap-8">
                         {/* Listed prompts panel */}
-                        <div className="md:col-span-7 bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
+                        <div className="md:col-span-7 bg-white rounded-[3rem] border-4 border-transparent hover:border-brand-lt_pink shadow-lg p-8 transition-all">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="font-black text-2xl text-gray-900 flex items-center gap-2"><Package className="w-5 h-5 text-gray-400" /> Listed Prompts</h3>
-                                <button onClick={() => setTab("create")} className="btn btn-primary !rounded-xl !py-2 !px-4 text-xs" data-testid="overview-create-btn">
-                                    <Plus className="w-4 h-4 mr-1" /> New Prompt
+                                <h3 className="font-black text-3xl text-brand-lt_purple flex items-center gap-2"><Package className="w-7 h-7 text-brand-lt_lime" /> Listed Prompts</h3>
+                                <button onClick={() => setTab("create")} className="btn !bg-brand-lt_lime !text-brand-lt_green hover:!bg-brand-lt_pink hover:!text-brand-lt_purple !rounded-full !py-3 !px-5 text-sm font-black transition-colors" data-testid="overview-create-btn">
+                                    <Plus className="w-5 h-5 mr-1" /> New Prompt
                                 </button>
                             </div>
                             {prompts.length === 0 ? (
-                                <div className="text-center py-16 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                                        <Package className="w-8 h-8 text-gray-300" />
+                                <div className="text-center py-16 bg-white rounded-[3rem] border-4 border-brand-lt_pink border-dashed">
+                                    <div className="w-20 h-20 bg-brand-lt_pink rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                                        <Package className="w-10 h-10 text-brand-lt_purple" />
                                     </div>
-                                    <p className="text-gray-500 font-medium mb-6">No prompts listed yet. Publish your first prompt to start earning.</p>
-                                    <button onClick={() => setTab("create")} className="btn btn-dark !rounded-xl">Create your first prompt</button>
+                                    <p className="text-brand-lt_purple/70 font-medium mb-8 text-lg">No prompts listed yet. Publish your first prompt to start earning.</p>
+                                    <button onClick={() => setTab("create")} className="btn !bg-brand-lt_purple !text-white hover:!bg-brand-lt_green !rounded-full !py-3 !px-8 text-lg font-black transition-colors">Create your first prompt</button>
                                 </div>
                             ) : (
                                 <div className="space-y-3 max-h-[480px] overflow-auto pr-2 custom-scrollbar">
@@ -205,49 +205,49 @@ export default function CreatorDashboard() {
 
                         {/* Earnings + Payout summary */}
                         <div className="md:col-span-5 space-y-6">
-                            <div className="bg-gradient-to-br from-gray-900 to-black text-white rounded-3xl p-8 shadow-[0_20px_40px_rgba(0,0,0,0.2)]">
-                                <div className="text-xs uppercase font-bold tracking-wider text-orange-400 mb-4 flex items-center gap-2"><Sparkles className="w-4 h-4" /> Earnings overview</div>
-                                <div className="space-y-5">
+                            <div className="bg-brand-lt_purple text-white rounded-[3rem] p-10 shadow-xl border-none">
+                                <div className="text-sm uppercase font-black tracking-wider text-brand-lt_lime mb-6 flex items-center gap-2"><Sparkles className="w-5 h-5" /> Earnings overview</div>
+                                <div className="space-y-6">
                                     <div>
-                                        <div className="text-xs text-white/60 font-medium mb-1">This month</div>
-                                        <div className="font-black text-5xl tracking-tight">${stats.earnings_this_month_usd || 0}</div>
+                                        <div className="text-sm text-brand-lt_pink font-bold mb-2">This month</div>
+                                        <div className="font-black text-6xl tracking-tight text-white">${stats.earnings_this_month_usd || 0}</div>
                                     </div>
-                                    <div className="h-px bg-white/10" />
+                                    <div className="h-1 bg-white/10 rounded-full" />
                                     <div>
-                                        <div className="text-xs text-white/60 font-medium mb-1">Total earned</div>
-                                        <div className="font-black text-3xl tracking-tight">${stats.earnings_usd || 0}</div>
+                                        <div className="text-sm text-brand-lt_pink font-bold mb-2">Total earned</div>
+                                        <div className="font-black text-4xl tracking-tight text-white">${stats.earnings_usd || 0}</div>
                                     </div>
-                                    <div className="h-px bg-white/10" />
+                                    <div className="h-1 bg-white/10 rounded-full" />
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <div className="text-xs text-white/60 font-medium mb-1">Downloads</div>
-                                            <div className="font-bold text-xl">{stats.total_downloads || 0}</div>
+                                            <div className="text-sm text-brand-lt_pink font-bold mb-2">Downloads</div>
+                                            <div className="font-black text-2xl text-white">{stats.total_downloads || 0}</div>
                                         </div>
                                         <div>
-                                            <div className="text-xs text-white/60 font-medium mb-1">Paid out</div>
-                                            <div className="font-bold text-xl">${stats.paid_out_usd || 0}</div>
+                                            <div className="text-sm text-brand-lt_pink font-bold mb-2">Paid out</div>
+                                            <div className="font-black text-2xl text-white">${stats.paid_out_usd || 0}</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
+                            <div className="bg-white rounded-[3rem] border-4 border-transparent hover:border-brand-lt_pink shadow-lg p-8 transition-all">
                                 <div className="flex items-center justify-between mb-4">
-                                    <div className="text-xs uppercase font-bold tracking-wider text-orange-500">Payout progress</div>
-                                    <Banknote className="w-5 h-5 text-orange-500" />
+                                    <div className="text-xs uppercase font-black tracking-wider text-brand-lt_purple">Payout progress</div>
+                                    <Banknote className="w-6 h-6 text-brand-lt_lime" />
                                 </div>
                                 <div className="font-black text-4xl text-gray-900">${stats.available_balance_usd || 0}</div>
                                 <div className="text-sm text-gray-500 mt-1 font-medium">of ${stats.min_payout_usd || 8500} minimum (~$100)</div>
-                                <div className="mt-5 h-3 bg-gray-100 rounded-full overflow-hidden">
-                                    <div className={`h-full rounded-full transition-all duration-1000 ${stats.payout_eligible ? "bg-emerald-500" : "bg-orange-500"}`} style={{ width: `${Math.min(100, stats.payout_progress_pct || 0)}%` }} />
+                                <div className="mt-5 h-4 bg-brand-lt_light rounded-full overflow-hidden">
+                                    <div className={`h-full rounded-full transition-all duration-1000 ${stats.payout_eligible ? "bg-brand-lt_lime" : "bg-brand-lt_purple"}`} style={{ width: `${Math.min(100, stats.payout_progress_pct || 0)}%` }} />
                                 </div>
                                 {stats.payout_eligible ? (
-                                    <button onClick={() => setTab("payouts")} className="btn btn-primary w-full mt-6 !rounded-xl" data-testid="overview-payout-btn">
+                                    <button onClick={() => setTab("payouts")} className="btn !bg-brand-lt_lime !text-brand-lt_green hover:!bg-brand-lt_pink hover:!text-brand-lt_purple w-full mt-6 !rounded-full !py-3 font-black text-lg transition-colors" data-testid="overview-payout-btn">
                                         Cash out now
                                     </button>
                                 ) : (
-                                    <div className="mt-5 text-xs text-gray-500 bg-gray-50 rounded-xl p-3 border border-gray-100">
-                                        Earn <span className="font-bold text-gray-900">${Math.max(0, (stats.min_payout_usd || 8500) - (stats.available_balance_usd || 0))}</span> more to unlock payout. 5% commission applies on cashout.
+                                    <div className="mt-5 text-sm font-bold text-brand-lt_purple bg-brand-lt_pink rounded-[1.5rem] p-4">
+                                        Earn <span className="font-black">${Math.max(0, (stats.min_payout_usd || 8500) - (stats.available_balance_usd || 0))}</span> more to unlock payout. 5% commission applies on cashout.
                                     </div>
                                 )}
                             </div>
@@ -258,10 +258,10 @@ export default function CreatorDashboard() {
                 {/* ============ CREATE ============ */}
                 {tab === "create" && (
                     <form onSubmit={submit} className="grid md:grid-cols-12 gap-8">
-                        <div className="md:col-span-7 bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8 space-y-6">
-                            <div className="pb-4 border-b border-gray-100 mb-6">
-                                <h2 className="text-2xl font-black text-gray-900">Publish New Prompt</h2>
-                                <p className="text-sm text-gray-500 mt-1">Fill out the details to list your prompt on the marketplace.</p>
+                        <div className="md:col-span-7 bg-white rounded-[3rem] border-4 border-transparent shadow-lg p-8 space-y-6">
+                            <div className="pb-4 border-b-2 border-brand-lt_light mb-6">
+                                <h2 className="text-3xl font-black text-brand-lt_purple">Publish New Prompt</h2>
+                                <p className="text-sm font-bold text-gray-500 mt-1">Fill out the details to list your prompt on the marketplace.</p>
                             </div>
                             
                             <div>
@@ -306,11 +306,11 @@ export default function CreatorDashboard() {
                             </div>
 
                             {/* Requires user media */}
-                            <div className="bg-orange-50/50 border border-orange-100 rounded-2xl p-6">
-                                <div className="text-xs uppercase font-bold tracking-wider text-orange-800 mb-3">Does this prompt require the user to upload an image / video?</div>
+                            <div className="bg-brand-lt_pink rounded-[2rem] p-6 border-none">
+                                <div className="text-xs uppercase font-black tracking-wider text-brand-lt_purple mb-3">Does this prompt require the user to upload an image / video?</div>
                                 <div className="grid grid-cols-3 gap-3">
                                     {[["none", "None", null], ["image", "Image", ImageIcon], ["video", "Video", Video]].map(([v, lbl, Ic]) => (
-                                        <label key={v} className={`cursor-pointer rounded-xl border py-3 px-3 text-center text-xs font-bold uppercase tracking-wider transition-all ${form.requires_user_media === v ? "bg-orange-500 text-white border-orange-500 shadow-md" : "bg-white text-gray-600 border-gray-200 hover:border-orange-300"}`}>
+                                        <label key={v} className={`cursor-pointer rounded-xl border-4 py-3 px-3 text-center text-xs font-black uppercase tracking-wider transition-all ${form.requires_user_media === v ? "bg-brand-lt_purple text-white border-brand-lt_purple shadow-md" : "bg-white text-gray-600 border-transparent hover:border-brand-lt_lime"}`}>
                                             <input type="radio" name="rum" className="hidden" checked={form.requires_user_media === v} onChange={() => setForm({ ...form, requires_user_media: v })} data-testid={`rum-${v}`} />
                                             {Ic && <Ic className="w-4 h-4 inline mr-1.5 -mt-0.5" />}{lbl}
                                         </label>
@@ -326,38 +326,38 @@ export default function CreatorDashboard() {
                                     />
                                 )}
                                 
-                                <div className="mt-6 pt-6 border-t border-orange-200/50">
-                                    <label className="block text-xs uppercase font-bold tracking-wider text-orange-800 mb-2">Credit Price (0 = free)</label>
+                                <div className="mt-6 pt-6 border-t-2 border-brand-lt_purple/20">
+                                    <label className="block text-xs uppercase font-black tracking-wider text-brand-lt_purple mb-2">Credit Price (0 = free)</label>
                                     <div className="flex items-center gap-3">
-                                        <Coins className="w-6 h-6 text-orange-500" />
+                                        <Coins className="w-6 h-6 text-brand-lt_purple" />
                                         <input type="number" min="0" value={form.price_credits} onChange={(e) => setForm({ ...form, price_credits: e.target.value })} className="input-orange" data-testid="input-price-credits" />
                                     </div>
-                                    <div className="text-xs text-gray-500 mt-2 font-medium">
-                                        <Lock className="w-3.5 h-3.5 inline mr-1 text-gray-400" /> Set to 0 to make the prompt free. Clients spend credits to unlock restricted prompts.
+                                    <div className="text-xs text-brand-lt_purple/70 mt-2 font-bold">
+                                        <Lock className="w-3.5 h-3.5 inline mr-1 text-brand-lt_purple/50" /> Set to 0 to make the prompt free. Clients spend credits to unlock restricted prompts.
                                     </div>
                                 </div>
                             </div>
 
-                            <button type="submit" disabled={submitting} className="btn btn-primary w-full !py-4 !rounded-xl !text-base shadow-[0_8px_20px_rgba(249,115,22,0.3)] hover:shadow-[0_12px_28px_rgba(249,115,22,0.4)]" data-testid="submit-prompt-btn">
+                            <button type="submit" disabled={submitting} className="btn !bg-brand-lt_lime !text-brand-lt_green hover:!bg-brand-lt_pink hover:!text-brand-lt_purple w-full !py-4 !rounded-full !text-lg font-black transition-all" data-testid="submit-prompt-btn">
                                 {submitting ? "Publishing…" : "Publish Prompt"}
                             </button>
                         </div>
 
                         <div className="md:col-span-5">
-                            <div className="bg-gradient-to-br from-gray-900 to-black text-white rounded-3xl border border-gray-800 shadow-[0_20px_40px_rgba(0,0,0,0.2)] p-8 sticky top-24">
-                                <div className="text-xs uppercase font-bold tracking-wider text-orange-400 mb-4 flex items-center gap-2"><Sparkles className="w-4 h-4" /> Credit Engine</div>
-                                <div className="flex items-end gap-3 mb-6 pb-6 border-b border-white/10">
-                                    <Coins className="w-10 h-10 text-orange-400 mb-2" />
-                                    <div className="font-black text-6xl leading-none" data-testid="engine-credits">{estimate.credits}</div>
-                                    <div className="text-base text-white/60 font-medium mb-1">credits</div>
+                            <div className="bg-brand-lt_purple text-white rounded-[3rem] p-8 shadow-xl sticky top-24">
+                                <div className="text-xs uppercase font-black tracking-wider text-brand-lt_lime mb-4 flex items-center gap-2"><Sparkles className="w-5 h-5" /> Credit Engine</div>
+                                <div className="flex items-end gap-3 mb-6 pb-6 border-b-4 border-white/10">
+                                    <Coins className="w-10 h-10 text-brand-lt_lime mb-2" />
+                                    <div className="font-black text-6xl leading-none text-white" data-testid="engine-credits">{estimate.credits}</div>
+                                    <div className="text-base font-bold text-brand-lt_pink mb-1">credits</div>
                                 </div>
-                                <div className="space-y-4 text-sm">
-                                    <div className="flex justify-between items-center"><span className="text-white/60">Words</span><span className="font-mono bg-white/10 px-2 py-0.5 rounded text-white">{estimate.words}</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-white/60">Complexity</span><span className="font-mono bg-white/10 px-2 py-0.5 rounded text-white">{estimate.complexity}</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-white/60">Calculated Tier</span><span className="badge bg-orange-500 text-white border-none">{estimate.tier}</span></div>
+                                <div className="space-y-4 text-sm font-bold">
+                                    <div className="flex justify-between items-center"><span className="text-white">Words</span><span className="font-mono bg-brand-lt_pink text-brand-lt_purple px-2 py-0.5 rounded-lg">{estimate.words}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-white">Complexity</span><span className="font-mono bg-brand-lt_pink text-brand-lt_purple px-2 py-0.5 rounded-lg">{estimate.complexity}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-white">Calculated Tier</span><span className="badge bg-brand-lt_lime text-brand-lt_green border-none">{estimate.tier}</span></div>
                                 </div>
-                                <div className="mt-8 bg-white/5 rounded-2xl p-4 border border-white/10">
-                                    <p className="text-xs text-white/70 leading-relaxed">
+                                <div className="mt-8 bg-brand-lt_pink/10 rounded-2xl p-4">
+                                    <p className="text-xs text-white leading-relaxed font-bold">
                                         Credits scale automatically with token count and complexity keywords. When clients unlock restricted prompts, they pay this exact credit cost.
                                     </p>
                                 </div>
@@ -370,25 +370,25 @@ export default function CreatorDashboard() {
 
                 {/* ============ LIBRARY ============ */}
                 {tab === "library" && (
-                    <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
+                    <div className="bg-white rounded-[3rem] border-4 border-transparent shadow-lg p-8">
                         <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                                <BookOpen className="w-6 h-6 text-orange-500" />
+                            <h2 className="text-3xl font-black text-brand-lt_purple flex items-center gap-3">
+                                <BookOpen className="w-8 h-8 text-brand-lt_lime" />
                                 Unlocked Prompts
                             </h2>
-                            <Link to="/marketplace" className="btn btn-ghost !rounded-xl !text-sm">
+                            <Link to="/marketplace" className="btn !bg-brand-lt_pink !text-brand-lt_purple hover:!bg-brand-lt_purple hover:!text-white !rounded-full !text-sm font-bold transition-all">
                                 Browse Marketplace <ArrowRight className="w-4 h-4 ml-1" />
                             </Link>
                         </div>
 
                         {purchases.length === 0 ? (
-                            <div className="py-20 text-center bg-gray-50 rounded-2xl border border-gray-100">
-                                <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mx-auto mb-4">
-                                    <ShoppingBag className="w-8 h-8 text-gray-300" />
+                            <div className="py-24 text-center bg-white rounded-[3rem] border-4 border-brand-lt_pink border-dashed">
+                                <div className="w-20 h-20 rounded-3xl bg-brand-lt_pink shadow-sm flex items-center justify-center mx-auto mb-6">
+                                    <ShoppingBag className="w-10 h-10 text-brand-lt_purple" />
                                 </div>
-                                <h3 className="font-black text-xl text-gray-900 mb-2">No prompts unlocked yet</h3>
-                                <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">Discover premium AI prompts crafted by experts and unlock them to see them here.</p>
-                                <Link to="/marketplace" className="btn btn-primary !rounded-xl inline-flex">Explore Prompts</Link>
+                                <h3 className="font-black text-2xl text-brand-lt_purple mb-2">No prompts unlocked yet</h3>
+                                <p className="text-brand-lt_purple/70 text-base font-medium mb-8 max-w-sm mx-auto">Discover premium AI prompts crafted by experts and unlock them to see them here.</p>
+                                <Link to="/marketplace" className="btn !bg-brand-lt_lime !text-brand-lt_green hover:!bg-brand-lt_pink hover:!text-brand-lt_purple !rounded-full !px-8 !py-3 font-black text-lg transition-colors inline-flex">Explore Prompts</Link>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -423,10 +423,10 @@ export default function CreatorDashboard() {
 
                 {/* ============ HISTORY ============ */}
                 {tab === "history" && (
-                    <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
+                    <div className="bg-white rounded-[3rem] border-4 border-transparent shadow-lg p-8">
                         <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                                <Clock className="w-6 h-6 text-orange-500" />
+                            <h2 className="text-3xl font-black text-brand-lt_purple flex items-center gap-3">
+                                <Clock className="w-8 h-8 text-brand-lt_lime" />
                                 Purchases History
                             </h2>
                         </div>
@@ -439,10 +439,10 @@ export default function CreatorDashboard() {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="border-b border-gray-100">
-                                            <th className="pb-4 px-4 text-xs uppercase font-bold tracking-wider text-gray-400">Date</th>
-                                            <th className="pb-4 px-4 text-xs uppercase font-bold tracking-wider text-gray-400">Prompt</th>
-                                            <th className="pb-4 px-4 text-xs uppercase font-bold tracking-wider text-gray-400 text-right">Amount</th>
+                                        <tr className="border-b-2 border-brand-lt_light">
+                                            <th className="pb-4 px-4 text-xs uppercase font-black tracking-wider text-brand-lt_purple">Date</th>
+                                            <th className="pb-4 px-4 text-xs uppercase font-black tracking-wider text-brand-lt_purple">Prompt</th>
+                                            <th className="pb-4 px-4 text-xs uppercase font-black tracking-wider text-brand-lt_purple text-right">Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
@@ -466,33 +466,33 @@ export default function CreatorDashboard() {
 
                 {/* ============ MY PROMPTS ============ */}
                 {tab === "my-prompts" && (
-                    <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
-                        <h2 className="text-2xl font-black text-gray-900 mb-6">Manage Your Prompts</h2>
+                    <div className="bg-white rounded-[3rem] border-4 border-transparent shadow-lg p-8">
+                        <h2 className="text-3xl font-black text-brand-lt_purple mb-6">Manage Your Prompts</h2>
                         <div className="space-y-4">
                             {prompts.length === 0 ? (
-                                <div className="text-center py-10 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <p className="text-gray-500 font-medium">No prompts yet. Create your first one!</p>
+                                <div className="text-center py-10 bg-brand-lt_light rounded-[2rem] border-4 border-brand-lt_pink border-dashed">
+                                    <p className="text-brand-lt_purple/70 font-bold text-lg">No prompts yet. Create your first one!</p>
                                 </div>
                             ) : prompts.map((p) => (
-                                <div key={p.id} className="flex flex-col sm:flex-row items-center gap-5 p-5 rounded-2xl border border-gray-100 bg-white hover:border-orange-200 hover:shadow-md transition-all group" data-testid={`mine-${p.id}`}>
-                                    <img src={p.preview_url || "https://images.unsplash.com/photo-1693487048787-a19cc08ded79?w=200"} className="w-20 h-20 rounded-xl object-cover border border-gray-200" alt="" />
+                                <div key={p.id} className="flex flex-col sm:flex-row items-center gap-5 p-5 rounded-[2rem] border-4 border-transparent bg-white hover:border-brand-lt_pink hover:shadow-lg transition-all group" data-testid={`mine-${p.id}`}>
+                                    <img src={p.preview_url || "https://images.unsplash.com/photo-1693487048787-a19cc08ded79?w=200"} className="w-24 h-24 rounded-2xl object-cover border-4 border-brand-lt_light" alt="" />
                                     <div className="flex-1 min-w-0 w-full text-center sm:text-left">
-                                        <div className="font-bold text-lg text-gray-900 group-hover:text-orange-500 transition-colors">{p.title}</div>
-                                        <div className="text-sm text-gray-500 truncate mt-1">{p.description}</div>
+                                        <div className="font-black text-xl text-brand-lt_purple group-hover:text-brand-lt_green transition-colors">{p.title}</div>
+                                        <div className="text-sm font-medium text-gray-500 truncate mt-1">{p.description}</div>
                                         {p.requires_user_media !== "none" && (
-                                            <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] uppercase font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                                            <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] uppercase font-black text-brand-lt_purple bg-brand-lt_pink px-3 py-1 rounded-xl">
                                                 {p.requires_user_media === "image" ? <ImageIcon className="w-3 h-3" /> : <Video className="w-3 h-3" />}
                                                 Requires {p.requires_user_media}
                                             </div>
                                         )}
                                     </div>
-                                    <div className="flex sm:flex-col items-center sm:items-end gap-4 sm:gap-1 w-full sm:w-auto border-t border-gray-100 sm:border-0 pt-4 sm:pt-0">
+                                    <div className="flex sm:flex-col items-center sm:items-end gap-4 sm:gap-1 w-full sm:w-auto border-t-2 border-brand-lt_light sm:border-0 pt-4 sm:pt-0">
                                         <div className="text-base flex-1 sm:flex-none text-left sm:text-right">
-                                            {p.is_restricted ? <span className="font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">{p.credits_required} cr</span> : <span className="font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">${p.price_usd}</span>}
+                                            {p.is_restricted ? <span className="font-black text-white bg-brand-lt_purple px-3 py-1 rounded-xl">{p.credits_required} cr</span> : <span className="font-black text-brand-lt_green bg-brand-lt_lime px-3 py-1 rounded-xl">${p.price_usd}</span>}
                                         </div>
-                                        <div className="text-xs text-gray-400 font-semibold">{p.downloads || 0} downloads</div>
-                                        <button onClick={() => remove(p.id)} className="p-2.5 rounded-xl border border-gray-200 text-gray-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors ml-auto sm:ml-0 mt-2" data-testid={`del-${p.id}`}>
-                                            <Trash2 className="w-4 h-4" />
+                                        <div className="text-xs text-brand-lt_purple/50 font-black">{p.downloads || 0} downloads</div>
+                                        <button onClick={() => remove(p.id)} className="p-3 rounded-2xl bg-brand-lt_light text-brand-lt_purple hover:bg-brand-lt_pink hover:text-brand-lt_purple transition-colors ml-auto sm:ml-0 mt-2" data-testid={`del-${p.id}`}>
+                                            <Trash2 className="w-5 h-5" />
                                         </button>
                                     </div>
                                 </div>
@@ -504,18 +504,18 @@ export default function CreatorDashboard() {
                 {/* ============ REVENUE ============ */}
                 {tab === "revenue" && (
                     <div className="space-y-6">
-                        <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
+                        <div className="bg-white rounded-[3rem] border-4 border-transparent shadow-lg p-8">
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-5 mb-8">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center">
-                                        <BarChart3 className="w-6 h-6 text-orange-500" />
+                                    <div className="w-14 h-14 rounded-2xl bg-brand-lt_pink flex items-center justify-center">
+                                        <BarChart3 className="w-7 h-7 text-brand-lt_purple" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-900">Revenue Analytics</h3>
+                                    <h3 className="text-3xl font-black text-brand-lt_purple">Revenue Analytics</h3>
                                 </div>
-                                <div className="flex gap-2 p-1.5 bg-gray-50 rounded-xl border border-gray-100 w-full sm:w-auto">
+                                <div className="flex gap-2 p-1.5 bg-brand-lt_light rounded-2xl border-none w-full sm:w-auto">
                                     {[["daily", "30 Days"], ["weekly", "12 Weeks"], ["monthly", "12 Months"]].map(([v, lbl]) => (
                                         <button key={v} onClick={() => setInterval(v)}
-                                            className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all ${interval === v ? "bg-white text-gray-900 shadow-sm border border-gray-200" : "text-gray-500 hover:text-gray-900"}`}
+                                            className={`flex-1 sm:flex-none px-5 py-2.5 text-xs font-black rounded-xl transition-all ${interval === v ? "bg-brand-lt_purple text-white shadow-md" : "text-brand-lt_purple/50 hover:text-brand-lt_purple"}`}
                                             data-testid={`int-${v}`}>{lbl}</button>
                                     ))}
                                 </div>
@@ -540,8 +540,8 @@ export default function CreatorDashboard() {
                             </div>
                         </div>
                         
-                        <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
-                            <div className="text-sm uppercase font-bold tracking-wider text-gray-500 mb-6">Sales Volume</div>
+                        <div className="bg-white rounded-[3rem] border-4 border-transparent shadow-lg p-8">
+                            <div className="text-sm uppercase font-black tracking-wider text-brand-lt_purple mb-6">Sales Volume</div>
                             <div className="h-[240px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={revenue.series} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -559,23 +559,23 @@ export default function CreatorDashboard() {
 
                 {/* ============ SALES ============ */}
                 {tab === "sales" && (
-                    <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
+                    <div className="bg-white rounded-[3rem] border-4 border-transparent shadow-lg p-8">
                         <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-2xl font-black text-gray-900">Recent Sales</h2>
-                            <span className="badge badge-orange">{sales.length} Transactions</span>
+                            <h2 className="text-3xl font-black text-brand-lt_purple">Recent Sales</h2>
+                            <span className="badge bg-brand-lt_lime text-brand-lt_green font-black px-4 py-1.5 rounded-xl border-none">{sales.length} Transactions</span>
                         </div>
                         <div className="space-y-3">
                             {sales.length === 0 ? (
-                                <div className="text-center py-10 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <p className="text-gray-500 font-medium">No sales yet.</p>
+                                <div className="text-center py-10 bg-brand-lt_light rounded-[2rem] border-4 border-brand-lt_pink border-dashed">
+                                    <p className="text-brand-lt_purple/70 font-bold text-lg">No sales yet.</p>
                                 </div>
                             ) : sales.map((s) => (
-                                <div key={s.id} className="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-md hover:border-orange-100 transition-all" data-testid={`sale-${s.id}`}>
+                                <div key={s.id} className="flex items-center gap-4 bg-white border-4 border-brand-lt_light rounded-[2rem] p-4 hover:shadow-lg hover:border-brand-lt_pink transition-all" data-testid={`sale-${s.id}`}>
                                     {s.prompt?.preview_url ? (
-                                        <img src={s.prompt.preview_url} className="w-12 h-12 rounded-xl object-cover border border-gray-200" alt="" />
+                                        <img src={s.prompt.preview_url} className="w-14 h-14 rounded-2xl object-cover border-4 border-brand-lt_light" alt="" />
                                     ) : (
-                                        <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                                            <Package className="w-5 h-5 text-gray-400" />
+                                        <div className="w-14 h-14 rounded-2xl bg-brand-lt_pink flex items-center justify-center">
+                                            <Package className="w-6 h-6 text-brand-lt_purple" />
                                         </div>
                                     )}
                                     <div className="flex-1 min-w-0">
@@ -594,84 +594,76 @@ export default function CreatorDashboard() {
                 {/* ============ PAYOUTS ============ */}
                 {tab === "payouts" && (
                     <div className="grid md:grid-cols-12 gap-8">
-                        <div className="md:col-span-5">
-                            <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8 sticky top-24">
-                                <div className="font-black text-2xl text-gray-900 mb-6 flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                                        <Banknote className="w-5 h-5 text-orange-500" /> 
+                        <div className="md:col-span-5 space-y-6">
+                            <div className="bg-brand-lt_green text-white rounded-[3rem] p-8 shadow-xl border-none">
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="w-14 h-14 rounded-2xl bg-brand-lt_lime flex items-center justify-center">
+                                        <Banknote className="w-7 h-7 text-brand-lt_green" />
                                     </div>
-                                    Request Payout
+                                    <span className="badge bg-white/20 text-white border-none font-bold">Minimum ${stats.min_payout_usd || 8500}</span>
                                 </div>
-                                
-                                <div className="bg-gray-50 rounded-2xl p-5 mb-6 border border-gray-100">
-                                    <div className="flex justify-between items-end mb-3">
-                                        <span className="text-sm font-semibold text-gray-500">Available Balance</span>
-                                        <span className="text-3xl font-black text-gray-900">${stats.available_balance_usd || 0}</span>
-                                    </div>
-                                    <div className="h-px bg-gray-200 w-full mb-3" />
-                                    <div className="flex justify-between items-center text-xs text-gray-500 font-medium">
-                                        <span>Minimum: <strong className="text-gray-900">${stats.min_payout_usd || 8500}</strong></span>
-                                        <span>Fee: <strong className="text-gray-900">5%</strong></span>
-                                    </div>
-                                </div>
-
-                                {!stats.payout_eligible && (
-                                    <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 text-sm text-orange-800 mb-6 font-medium">
-                                        Earn <span className="font-black text-orange-600">${Math.max(0, (stats.min_payout_usd || 8500) - (stats.available_balance_usd || 0))}</span> more to unlock payout (~$100 threshold).
-                                    </div>
-                                )}
+                                <div className="text-sm font-bold text-brand-lt_lime mb-2">Available for payout</div>
+                                <div className="font-black text-5xl tracking-tight mb-8">${stats.available_balance_usd || 0}</div>
                                 
                                 <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-xs uppercase font-bold tracking-wider text-gray-700 mb-2">Amount (USD)</label>
-                                        <input type="number" placeholder={`Min $${stats.min_payout_usd || 8500}`} value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} disabled={!stats.payout_eligible} className="input-orange !py-3 !text-lg font-bold disabled:opacity-50 disabled:bg-gray-50" data-testid="payout-amount" />
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-lt_green font-black text-xl">$</div>
+                                        <input
+                                            type="number"
+                                            value={payoutAmount}
+                                            onChange={(e) => setPayoutAmount(e.target.value)}
+                                            placeholder="Amount to withdraw"
+                                            className="w-full bg-white text-brand-lt_green placeholder:text-brand-lt_green/50 text-xl font-black py-4 pl-10 pr-4 rounded-full border-none focus:ring-4 focus:ring-brand-lt_lime/50 transition-all outline-none"
+                                            max={stats.available_balance_usd || 0}
+                                        />
                                     </div>
-                                    
-                                    {parseInt(payoutAmount) > 0 && (
-                                        <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-5 text-sm space-y-3">
-                                            <div className="flex justify-between font-medium text-emerald-800"><span>Requested</span><span>${payoutAmount}</span></div>
-                                            <div className="flex justify-between font-medium text-orange-600"><span>Platform Fee (5%)</span><span>−${commission}</span></div>
-                                            <div className="h-px bg-emerald-200/50 w-full" />
-                                            <div className="flex justify-between font-black text-lg text-emerald-700"><span>You Receive</span><span>${(parseInt(payoutAmount) || 0) - commission}</span></div>
-                                        </div>
-                                    )}
-                                    
-                                    <button onClick={requestPayout} disabled={!stats.payout_eligible} className="btn btn-primary w-full !py-3.5 !rounded-xl !text-base shadow-[0_8px_20px_rgba(249,115,22,0.3)] disabled:shadow-none disabled:opacity-50" data-testid="payout-submit">Request Payout</button>
-                                    <div className="text-xs text-center font-medium text-gray-400">Payouts are processed within 3 business days via Stripe.</div>
+                                    <div className="flex justify-between text-xs font-bold text-white/80 px-2">
+                                        <span>5% Commission</span>
+                                        <span>-${commission} fee</span>
+                                    </div>
+                                    <button onClick={requestPayout} disabled={!payoutAmount || parseInt(payoutAmount) <= 0 || parseInt(payoutAmount) > (stats.available_balance_usd || 0)} className="btn !bg-brand-lt_lime !text-brand-lt_green hover:!bg-brand-lt_pink hover:!text-brand-lt_purple w-full !py-4 !rounded-full !text-lg font-black transition-all">
+                                        Withdraw to Bank
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="md:col-span-7">
-                            <div className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-8">
-                                <h2 className="text-2xl font-black text-gray-900 mb-6">Payout History</h2>
+                            <div className="bg-white rounded-[3rem] border-4 border-transparent shadow-lg p-8">
+                                <h3 className="text-2xl font-black text-brand-lt_purple mb-6">Payout History</h3>
                                 {payouts.length === 0 ? (
-                                    <div className="text-center py-10 bg-gray-50 rounded-2xl border border-gray-100">
-                                        <p className="text-gray-500 font-medium">No payouts requested yet.</p>
+                                    <div className="text-center py-10 bg-brand-lt_light rounded-[2rem] border-4 border-brand-lt_pink border-dashed">
+                                        <p className="text-brand-lt_purple/70 font-bold text-lg">No past payouts.</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-3">
-                                        {payouts.map((p) => (
-                                            <div key={p.id} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center justify-between hover:shadow-md transition-shadow" data-testid={`payout-${p.id}`}>
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${p.status === "processed" ? "bg-emerald-50 text-emerald-500" : "bg-orange-50 text-orange-500"}`}>
-                                                        <Wallet className="w-6 h-6" />
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-black text-xl text-gray-900">${p.amount_usd}</div>
-                                                        <div className="text-xs text-gray-500 font-medium">{new Date(p.requested_at).toLocaleDateString()} at {new Date(p.requested_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="text-xs text-gray-500 font-medium mb-1">Net <span className="font-bold text-gray-900">${p.net_usd}</span></div>
-                                                    <div className={`inline-flex px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md ${
-                                                        p.status === "processed" ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"
-                                                    }`}>
-                                                        {p.status}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="border-b-2 border-brand-lt_light">
+                                                    <th className="pb-4 px-4 text-xs uppercase font-black tracking-wider text-brand-lt_purple">Date</th>
+                                                    <th className="pb-4 px-4 text-xs uppercase font-black tracking-wider text-brand-lt_purple">Status</th>
+                                                    <th className="pb-4 px-4 text-xs uppercase font-black tracking-wider text-brand-lt_purple text-right">Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y-2 divide-brand-lt_light">
+                                                {payouts.map((p) => (
+                                                    <tr key={p.id} className="hover:bg-brand-lt_light/50 transition-colors">
+                                                        <td className="py-4 px-4 text-sm font-bold text-gray-900">{new Date(p.requested_at).toLocaleDateString()}</td>
+                                                        <td className="py-4 px-4">
+                                                            <div className={`inline-flex px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-xl ${
+                                                                p.status === "processed" ? "bg-brand-lt_lime text-brand-lt_green" : "bg-brand-lt_pink text-brand-lt_purple"
+                                                            }`}>
+                                                                {p.status}
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-4 px-4 text-right">
+                                                            <div className="font-black text-gray-900">${p.amount_usd}</div>
+                                                            <div className="text-xs text-gray-500 font-bold mt-1">Net ${p.net_usd}</div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 )}
                             </div>

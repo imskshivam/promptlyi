@@ -49,7 +49,7 @@ export default function Landing() {
             
             <p className="text-lg sm:text-xl text-brand-lt_lime/80 mb-10 max-w-xl leading-relaxed">
               Unlock the full power of ChatGPT, Midjourney, and Claude. Browse thousands of top-tier prompts curated by the community. 
-              <span className="font-bold text-brand-lt_lime block mt-2">100% Free. Always.</span>
+              <span className="font-bold text-brand-lt_lime block mt-2">Start exploring today.</span>
             </p>
             
             <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -63,7 +63,7 @@ export default function Landing() {
             
             <div className="mt-12 flex items-center gap-6 text-sm font-semibold text-brand-lt_lime/70">
               <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-brand-lt_lime" /> No signup required</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-brand-lt_lime" /> Free forever</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-brand-lt_lime" /> Premium prompts</span>
             </div>
           </div>
 

@@ -202,15 +202,30 @@ export default function PromptDetail() {
 
     const unlock = async () => {
         if (!user) { login(); return; }
+        
+        const cost = p.price_credits || p.credits_required || 0;
+        if (p.is_restricted && (user.credits || 0) < cost) {
+            toast.error(`Insufficient credits. You have ${user.credits || 0}, need ${cost}.`);
+            nav("/pricing");
+            return;
+        }
+
         setUnlocking(true);
         try {
             const r = await http.post("/prompts/purchase", { prompt_id: id });
-            logCustomEvent("unlock_prompt", { prompt_id: id, is_free: true });
-            toast.success("🎉 Prompt unlocked!");
-            if (r.data.content) setP((prev) => ({ ...prev, content: r.data.content }));
-            else loadPrompt();
+            logCustomEvent("unlock_prompt", { prompt_id: id, is_free: cost === 0 });
+            toast.success(cost === 0 ? "🎉 Free prompt unlocked!" : "🎉 Prompt unlocked!");
+            if (r.data.content) {
+                setP((prev) => ({ ...prev, content: r.data.content }));
+                // update local user state if needed (just deduct visual credits)
+            } else loadPrompt();
         } catch (e) {
-            toast.error(e.response?.data?.detail || "Failed to unlock");
+            if (e.response?.status === 402) {
+                toast.error("Not enough credits! Redirecting to get more...");
+                nav("/pricing");
+            } else {
+                toast.error(e.response?.data?.detail || "Failed to unlock");
+            }
         } finally { setUnlocking(false); }
     };
 
