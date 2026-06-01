@@ -37,6 +37,30 @@ router.post("/google", asyncH(async (req, res) => {
     let user = await db.collection("users").findOne({ email }, { projection: { password_hash: 0 } });
 
     if (!user) {
+        // Fetch location from IP for new user
+        let country = null;
+        let countryCode = null;
+        try {
+            let ip = req.headers["x-forwarded-for"] || (req.socket && req.socket.remoteAddress);
+            if (ip && ip.includes(",")) ip = ip.split(",")[0].trim();
+            if (ip && ip !== "::1" && ip !== "127.0.0.1") {
+                const response = await fetch(`https://api.ipinfo.io/lite/${ip}`, {
+                    headers: {
+                        Authorization: "Bearer 0561296966757e",
+                        Accept: "application/json"
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    country = data.country;
+                    countryCode = data.country_code;
+                    console.log(`[auth] Fetched IP info for new user. Country: ${country}`);
+                }
+            }
+        } catch (e) {
+            console.error("[auth] Failed to fetch IP info", e);
+        }
+
         // Create new user
         user = {
             email,
@@ -47,6 +71,8 @@ router.post("/google", asyncH(async (req, res) => {
             credits: 0,
             subscription_plan: null,
             bio: "",
+            country,
+            country_code: countryCode,
             created_at: iso(utcNow()),
         };
         const result = await db.collection("users").insertOne({ ...user });
