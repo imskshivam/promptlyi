@@ -13,7 +13,7 @@ export default function BlogPost() {
     return <Navigate to="/blog" replace />;
   }
 
-  const shareUrl = `https://promptlyi.com/blog/${blog.slug}`;
+  const shareUrl = `https://promtlyi.com/blog/${blog.slug}`;
 
   return (
     <div className="min-h-screen bg-brand-lt_light">

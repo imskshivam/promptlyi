@@ -5,8 +5,8 @@ export default function SEO({
   title = "Promptlyi · The Creator Economy for Prompt Engineers",
   description = "Discover, buy, and sell highly optimized AI prompts. Promptlyi is the premier marketplace for ChatGPT, Midjourney, and more.",
   keywords = "AI, Prompt Engineering, Prompt Marketplace, ChatGPT prompts, Midjourney prompts, AI tools",
-  url = "https://promptlyi.com",
-  image = "https://promptlyi.com/logo192.png"
+  url = "https://promtlyi.com",
+  image = "https://promtlyi.com/logo192.png"
 }) {
   return (
     <Helmet>
